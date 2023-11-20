@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/14 15:21:33 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/20 12:40:50 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/11/20 15:36:44 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ class ServerConfiguration
 		std::vector<int> listen_ports;
 		std::vector<std::string> server_names;
 		std::map<int, std::string> error_pages;
-		int client_max_body_size;
+		//int client_max_body_size;
 
 		int serverSocket;
 		std::vector<int> clientSockets;

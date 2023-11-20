@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/17 11:46:51 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/11/20 15:36:00 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,12 @@
 
 
 #include <string>
+#include <vector>
 #include <iostream>
 #include <stdexcept>
 
 
+#include "ServerParser.hpp"
 
 #include "WebServer.hpp"
 #include "ServerConfiguration.hpp"

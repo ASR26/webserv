@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/20 12:40:26 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/11/20 15:36:18 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void WebServer::addServer(class ServerConfiguration & server)
 
 void WebServer::runWebserv()
 {
-	int events;
+	//int events;
 	
 	acceptedaddrinfo_size = sizeof(struct sockaddr_storage);
 	while (1)
