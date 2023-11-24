@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/17 11:46:51 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/11/23 13:14:48 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,6 @@
 #include <sys/select.h>
 /* poll */
 #include <poll.h>
-/* epoll epoll_create epoll_ctl epoll_wait */
-/* #include <sys/epoll.h> */
 /* socket accept listen send recv bind connect getaddrinfo freeaddrinfo setsockopt getsockname */
 #include <sys/socket.h>
 /* getaddrinfo freeaddrinfo */
@@ -41,6 +39,8 @@
 #include <sys/wait.h>
 /* kill signal */
 #include <signal.h>
+/* kqueue kevent */
+#include <sys/event.h>
 
 
 
@@ -52,5 +52,6 @@
 
 #include "WebServer.hpp"
 #include "ServerConfiguration.hpp"
+#include "Error.hpp"
 
 #endif

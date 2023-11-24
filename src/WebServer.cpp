@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/20 12:40:26 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/11/23 15:34:16 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,29 +29,75 @@ void WebServer::addServer(class ServerConfiguration & server)
 
 void WebServer::runWebserv()
 {
+	int c;
+	int k;
+	int r;
+	struct kevent new_event;
+	struct kevent finished_event;
 	int events;
+	int kq = kqueue();
 	
+	if (kq == -1)
+	{
+		std::cout << std::strerror(errno) << std::endl;
+		//throw std::runtime_error("Error: kqueue");
+	}
+
+	/* Do this in for loop for all servers */
+	EV_SET(&new_event, servers[0].getServerSocket(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
+	k = kevent(kq, &new_event, 1, NULL, 0, NULL);
+	if (k == -1)
+		Error::functionError();
 	acceptedaddrinfo_size = sizeof(struct sockaddr_storage);
 	while (1)
 	{
-		if ((serverSocket_acc = accept(servers[0].getServerSocket(), (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
-		{
-			throw std::runtime_error("Error: accept");
-		}
-		std::cout << "Connection accepted" << std::endl;
-	}
-
-	/* while (true)
-	{
-		events = poll();
-
-		if (events < 0)
-			//error
-		else if (events == 0)
+		events = kevent(kq, NULL, 0, &finished_event, 1, NULL);
+		if (events == -1)
+			Error::functionError();
+		if (events == 0)
 			continue;
-		else
+		if (finished_event.flags == EV_EOF)
 		{
-			
+			std::cout << std::endl << "closing connection" << std::endl;
+			close(finished_event.ident);
 		}
-	} */
+		else if (finished_event.ident == servers[0].getServerSocket())
+		{
+			std::cout << std::endl << "accept connection" << std::endl;
+			if ((serverSocket_acc = accept(servers[0].getServerSocket(), (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
+				Error::functionError();
+			EV_SET(&new_event, serverSocket_acc, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+			kevent(kq, &new_event, 1, NULL, 0, NULL);
+		}
+		else if (finished_event.filter == EVFILT_READ)
+		{
+			std::cout << std::endl << "receiving request" << std::endl;
+			char buff[1001];
+			r = read(finished_event.ident, buff, 1000);
+			write(1, buff, r);
+			write(1, "\n", 1);
+			EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
+			kevent(kq, &new_event, 1, NULL, 0, NULL);
+			EV_SET(&finished_event, serverSocket_acc,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
+			kevent(kq, &finished_event, 1, NULL, 0, NULL);
+		}
+		else if (finished_event.filter == EVFILT_WRITE)
+		{
+			std::cout << std::endl << "sending response" << std::endl;
+			
+			int fd = open("tab.html", O_RDONLY);
+			char buff2[10000];
+			r = read(fd, buff2, 10000);
+			close(fd);
+			write(finished_event.ident, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n", strlen( "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n"));
+			write(finished_event.ident, buff2, r);
+
+			EV_SET(&finished_event, finished_event.ident,  EVFILT_READ, EV_DELETE, 0, 0, NULL);
+			kevent(kq, &finished_event, 1, NULL, 0, NULL);
+			EV_SET(&finished_event, finished_event.ident,  EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+			kevent(kq, &finished_event, 1, NULL, 0, NULL);
+			close(finished_event.ident);
+		}
+
+	}
 }

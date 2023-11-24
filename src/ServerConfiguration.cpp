@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:17:57 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/20 12:39:50 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/11/23 12:58:01 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ ServerConfiguration::ServerConfiguration()
 	{
 		throw std::runtime_error(strerror(errno));
 	}
-	if (listen(serverSocket, 10) == -1)
+	if (listen(serverSocket, 1000) == -1)
 	{
 		throw std::runtime_error("Error: listen");
 	}

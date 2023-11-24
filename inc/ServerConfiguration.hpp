@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/14 15:21:33 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/20 12:40:50 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/11/23 16:28:29 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class ServerConfiguration
 		~ServerConfiguration();
 
 		int getServerSocket() const;
+		
 };
 
 #endif
