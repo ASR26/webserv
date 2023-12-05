@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/23 13:14:48 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/01 14:27:37 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,5 +53,7 @@
 #include "WebServer.hpp"
 #include "ServerConfiguration.hpp"
 #include "Error.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 
 #endif

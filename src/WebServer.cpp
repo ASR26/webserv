@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/23 15:34:16 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/01 16:57:08 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ void WebServer::runWebserv()
 	if (kq == -1)
 	{
 		std::cout << std::strerror(errno) << std::endl;
-		//throw std::runtime_error("Error: kqueue");
+		//throw std::runtime_error("Error: kqueue"); 
 	}
 
 	/* Do this in for loop for all servers */
@@ -58,12 +58,12 @@ void WebServer::runWebserv()
 			continue;
 		if (finished_event.flags == EV_EOF)
 		{
-			std::cout << std::endl << "closing connection" << std::endl;
+			//std::cout << std::endl << "closing connection" << std::endl;
 			close(finished_event.ident);
 		}
 		else if (finished_event.ident == servers[0].getServerSocket())
 		{
-			std::cout << std::endl << "accept connection" << std::endl;
+			//std::cout << std::endl << "accept connection" << std::endl;
 			if ((serverSocket_acc = accept(servers[0].getServerSocket(), (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
 				Error::functionError();
 			EV_SET(&new_event, serverSocket_acc, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -71,11 +71,8 @@ void WebServer::runWebserv()
 		}
 		else if (finished_event.filter == EVFILT_READ)
 		{
-			std::cout << std::endl << "receiving request" << std::endl;
-			char buff[1001];
-			r = read(finished_event.ident, buff, 1000);
-			write(1, buff, r);
-			write(1, "\n", 1);
+			//std::cout << std::endl << "receiving request" << std::endl;
+			servers[0].addRequest(finished_event.ident);
 			EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
 			kevent(kq, &new_event, 1, NULL, 0, NULL);
 			EV_SET(&finished_event, serverSocket_acc,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
@@ -83,7 +80,7 @@ void WebServer::runWebserv()
 		}
 		else if (finished_event.filter == EVFILT_WRITE)
 		{
-			std::cout << std::endl << "sending response" << std::endl;
+			//std::cout << std::endl << "sending response" << std::endl;
 			
 			int fd = open("tab.html", O_RDONLY);
 			char buff2[10000];

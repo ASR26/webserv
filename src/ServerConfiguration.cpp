@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:17:57 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/23 12:58:01 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/01 16:51:00 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ ServerConfiguration::ServerConfiguration()
 		throw std::runtime_error("Error: listen");
 	}
 	//freeaddrinfo(returned_sockaddr);
-	std::cout << "So far so good..." << std::endl;
+	//std::cout << "So far so good..." << std::endl;
 	return ;
 }
 
@@ -67,4 +67,10 @@ ServerConfiguration::~ServerConfiguration()
 int ServerConfiguration::getServerSocket() const
 {
 	return this->serverSocket;
+}
+
+void ServerConfiguration::addRequest(int fd)
+{
+	requestQueue.insert(std::pair<int, class Request>(fd, Request(fd)));
+	return ;
 }

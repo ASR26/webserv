@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/14 15:21:33 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/23 16:28:29 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/04 17:44:44 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <string>
 # include <map>
 # include <vector>
+# include "Request.hpp"
 
 class ServerConfiguration
 {
@@ -27,12 +28,15 @@ class ServerConfiguration
 
 		int serverSocket;
 		std::vector<int> clientSockets;
+
+		std::map<int, class Request> requestQueue;
 	public:
 		ServerConfiguration();
 		~ServerConfiguration();
 
 		int getServerSocket() const;
-		
+		void addRequest(int fd);
+		void formResponse();
 };
 
 #endif
