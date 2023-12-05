@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ServerConfiguration.hpp                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/14 15:21:33 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/20 15:36:44 by gromero-         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef SERVERCONFIGURATION_HPP
 # define SERVERCONFIGURATION_HPP
 

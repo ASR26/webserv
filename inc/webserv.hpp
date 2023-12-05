@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/20 15:36:00 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/05 12:31:42 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,11 +46,14 @@
 
 #include <string>
 #include <vector>
+#include <map>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 
 
 #include "ServerParser.hpp"
+#include "LocationParser.hpp"
 
 #include "WebServer.hpp"
 #include "ServerConfiguration.hpp"

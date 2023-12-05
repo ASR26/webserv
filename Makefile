@@ -6,12 +6,12 @@
 #    By: gromero- <gromero-@student.42malaga.com>   +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/16 14:13:39 by gromero-          #+#    #+#              #
-#    Updated: 2023/11/20 15:37:36 by gromero-         ###   ########.fr        #
+#    Updated: 2023/11/28 12:33:42 by gromero-         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC			=	src/main.cpp src/WebServer.cpp src/ServerConfiguration.cpp \
-				src/ServerParser.cpp
+SRC			=	src/main.cpp src/WebServer.cpp src/LocationParser.cpp \
+				src/ServerParser.cpp src/ServerConfiguration.cpp
 
 OBJ_SRC		=	 $(SRC:.cpp=.o)
 
