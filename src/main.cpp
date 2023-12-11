@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/11/23 14:55:52 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/11 11:25:04 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "../inc/webserv.hpp"
 
 void	getConfig(std::string conf)
@@ -63,13 +64,12 @@ int main(int argc, char **argv)
 	{
 		if (argc == 2)
 			getConfig(argv[1]);
-			//	ServerParser parser(argv[1]);
 		else
 			ServerParser();
-		/*WebServer mywebserver = WebServer();
+		WebServer mywebserver = WebServer();
 		ServerConfiguration servconf = ServerConfiguration();
 		mywebserver.addServer(servconf);
-		mywebserver.runWebserv();*/
+		mywebserver.runWebserv();
 	}
 	catch(const std::exception& e)
 	{

@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/05 12:31:42 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/11 11:19:22 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,6 @@
 #include <sys/select.h>
 /* poll */
 #include <poll.h>
-/* epoll epoll_create epoll_ctl epoll_wait */
-/* #include <sys/epoll.h> */
 /* socket accept listen send recv bind connect getaddrinfo freeaddrinfo setsockopt getsockname */
 #include <sys/socket.h>
 /* getaddrinfo freeaddrinfo */
@@ -41,6 +39,8 @@
 #include <sys/wait.h>
 /* kill signal */
 #include <signal.h>
+/* kqueue kevent */
+#include <sys/event.h>
 
 
 
@@ -57,5 +57,8 @@
 
 #include "WebServer.hpp"
 #include "ServerConfiguration.hpp"
+//#include "Error.hpp"
+#include "Request.hpp"
+#include "Response.hpp"
 
 #endif

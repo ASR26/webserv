@@ -3,13 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   ServerParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com>   +#+  +:+       +#+        */
+/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/20 15:21:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/11/28 12:38:26 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/11 11:28:46 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-#include "../inc/ServerParser.hpp"
+
 
 ServerParser::ServerParser()
 {
@@ -125,3 +125,14 @@ void	ServerParser::getInfo()
 	std::cout << "Client size : " << c_size << std::endl;
 	std::cout << std::endl;
 }
+int ServerConfiguration::getServerSocket() const
+{
+	return this->serverSocket;
+}
+
+void ServerConfiguration::addRequest(int fd)
+{
+	requestQueue.insert(std::pair<int, class Request>(fd, Request(fd)));
+	return ;
+}
+
