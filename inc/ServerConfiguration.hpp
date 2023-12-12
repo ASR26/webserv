@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/14 15:21:33 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/11 11:20:08 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 10:21:36 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,9 @@ class ServerConfiguration
 		ServerConfiguration();
 		~ServerConfiguration();
 
-		int getServerSocket() const;
+		/*int getServerSocket() const;
 		void addRequest(int fd);
-		void formResponse();
+		void formResponse();*/
 };
 
 #endif

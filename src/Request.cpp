@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/04 17:19:14 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/12 09:57:10 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ Request::Request(int fd)
 		str += buff;
 	}
 	pos = str.find("\r\n\r\n");
-	if (pos == std::string::npos)
+	if (pos == (int)std::string::npos)
 	{
 		header = str;
 		body = "";
@@ -72,7 +72,7 @@ Request& Request::operator=(const Request& req)
 
 void Request::setMethod()
 {
-	int pos;
+	//int pos;
 	int i = 0;
 	std::string methods[3] = {"GET", "POST", "DELETE"};
 	for (i = 0; i < 3; i++)

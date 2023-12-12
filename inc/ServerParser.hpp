@@ -6,10 +6,11 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/20 15:19:04 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/11 11:28:07 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 10:28:39 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef SERVERPARSER_HPP
 # define SERVERPARSER_HPP
 
 # include "webserv.hpp"
@@ -24,6 +25,8 @@ class	ServerParser
 		std::vector<std::string>	s_name;
 		std::map<int, std::string>	error;
 		int							c_size;
+		std::map<int, class Request> requestQueue;
+		int serverSocket;
 
 	public:
 		ServerParser();

@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/11 11:22:57 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 10:33:43 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,45 @@ WebServer::~WebServer()
 	return ;
 }
 
-void WebServer::addServer(class ServerConfiguration & server)
+void WebServer::addServer(std::string conf)
 {
-	servers.push_back(server);
+	std::string::size_type n;
+	std::fstream fd;
+	std::string str;
+	std::string file;
+
+	n = conf.find(".conf");
+	if (std::string::npos == n)
+		throw std::exception();
+	fd.open (conf, std::fstream::in);
+	if (fd.is_open())
+		while (std::getline(fd, str))
+		{
+			file += str;
+			file.push_back('\n');
+		}
+	else
+		throw std::exception();
+	n = file.find("server");
+	while (n != std::string::npos)
+	{
+		int	i = n + 5;
+		while (file[++i] && file[i] != '{')
+			if (file[i] != ' ' && file[i] != '\t')
+				throw std::exception();
+		i = n;
+		while (file[i] && file[i] != '{')
+			i++;
+		int cont = 1;
+		while (file[++i] && cont != 0)
+			if (file[i] == '{')
+				cont++;
+			else if (file[i] == '}')
+				cont--;
+		servers.push_back(ServerParser(file.substr(n, i - n)));
+		n = file.find("server", i);
+	}
+	fd.close();
 }
 
 void WebServer::runWebserv()

@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/11 11:19:22 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 09:56:28 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@
 
 #include "WebServer.hpp"
 #include "ServerConfiguration.hpp"
-//#include "Error.hpp"
+#include "Error.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 

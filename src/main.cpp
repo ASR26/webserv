@@ -6,13 +6,13 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/11 11:25:04 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 10:34:17 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/webserv.hpp"
 
-void	getConfig(std::string conf)
+/*void	getConfig(std::string conf)
 {
 	std::string::size_type n;
 	std::fstream fd;
@@ -52,7 +52,8 @@ void	getConfig(std::string conf)
 		n = file.find("server", i);
 	}
 	fd.close();
-}
+}*/
+
 int main(int argc, char **argv)
 {
 	if (argc > 2)
@@ -62,13 +63,13 @@ int main(int argc, char **argv)
 	}
 	try
 	{
-		if (argc == 2)
+		/*if (argc == 2)
 			getConfig(argv[1]);
 		else
-			ServerParser();
+			ServerParser();*/
 		WebServer mywebserver = WebServer();
-		ServerConfiguration servconf = ServerConfiguration();
-		mywebserver.addServer(servconf);
+		//ServerConfiguration servconf = ServerConfiguration();
+		mywebserver.addServer(argv[1]);
 		mywebserver.runWebserv();
 	}
 	catch(const std::exception& e)

@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:17:57 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/11 11:20:10 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 15:55:59 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ ServerConfiguration::~ServerConfiguration()
 {
 	return ;
 }
-
+/*
 int ServerConfiguration::getServerSocket() const
 {
 	return this->serverSocket;
@@ -73,4 +73,4 @@ void ServerConfiguration::addRequest(int fd)
 {
 	requestQueue.insert(std::pair<int, class Request>(fd, Request(fd)));
 	return ;
-}
+}*/
