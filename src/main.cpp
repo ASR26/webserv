@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 10:34:17 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 13:36:00 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 	std::fstream fd;
 	std::string str;
 	std::string file;
-	std::vector<ServerParser> sv;
+	std::vector<Server> sv;
 
 	n = conf.find(".conf");
 	if (std::string::npos == n)
@@ -48,7 +48,7 @@
 				cont++;
 			else if (file[i] == '}')
 				cont--;
-		sv.push_back(ServerParser(file.substr(n, i - n)));
+		sv.push_back(Server(file.substr(n, i - n)));
 		n = file.find("server", i);
 	}
 	fd.close();
@@ -66,7 +66,7 @@ int main(int argc, char **argv)
 		/*if (argc == 2)
 			getConfig(argv[1]);
 		else
-			ServerParser();*/
+			Server();*/
 		WebServer mywebserver = WebServer();
 		//ServerConfiguration servconf = ServerConfiguration();
 		mywebserver.addServer(argv[1]);

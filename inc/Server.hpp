@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerParser.hpp                                   :+:      :+:    :+:   */
+/*   Server.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,14 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVERPARSER_HPP
-# define SERVERPARSER_HPP
+#ifndef SERVER_HPP
+# define SERVER_HPP
 
 # include "webserv.hpp"
 # include "LocationParser.hpp"
 # include <fstream>
 
-class	ServerParser
+class	Server
 {
 	private:
 		std::vector<LocationParser> location;
@@ -29,9 +29,9 @@ class	ServerParser
 		int serverSocket;
 
 	public:
-		ServerParser();
-		ServerParser(std::string);
-		~ServerParser();
+		Server();
+		Server(std::string);
+		~Server();
 		void getInfo(void);
 		int getServerSocket() const;
 		void addRequest(int fd);

@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerParser.cpp                                   :+:      :+:    :+:   */
+/*   Server.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,12 +12,12 @@
 
 #include "../inc/webserv.hpp"
 
-ServerParser::ServerParser()
+Server::Server()
 {
 
 }
 
-ServerParser::ServerParser(std::string conf)
+Server::Server(std::string conf)
 {
 	std::string::size_type	n;
 	int						i = 0;
@@ -147,12 +147,12 @@ ServerParser::ServerParser(std::string conf)
 	//getInfo();
 }
 
-ServerParser::~ServerParser()
+Server::~Server()
 {
 
 }
 
-void	ServerParser::getInfo()
+void	Server::getInfo()
 {
 	std::cout << "Server" << std::endl << "Port : " << port << std::endl;
 	std::vector<std::string>::iterator v_it = s_name.begin();
@@ -170,12 +170,12 @@ void	ServerParser::getInfo()
 	std::cout << "Client size : " << c_size << std::endl;
 	std::cout << std::endl;
 }
-int ServerParser::getServerSocket() const
+int Server::getServerSocket() const
 {
 	return this->serverSocket;
 }
 
-void ServerParser::addRequest(int fd)
+void Server::addRequest(int fd)
 {
 	requestQueue.insert(std::pair<int, class Request>(fd, Request(fd)));
 	return ;

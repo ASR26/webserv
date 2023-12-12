@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 12:43:01 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/12 13:35:39 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void WebServer::addServer(std::string conf)
 				cont++;
 			else if (file[i] == '}')
 				cont--;
-		servers.push_back(ServerParser(file.substr(n, i - n)));
+		servers.push_back(Server(file.substr(n, i - n)));
 		n = file.find("server", i);
 	}
 	fd.close();
