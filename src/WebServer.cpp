@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 10:33:43 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 12:43:01 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ void WebServer::runWebserv()
 	}
 
 	/* Do this in for loop for all servers */
+	std::cout << servers.size() << std::endl;
 	EV_SET(&new_event, servers[0].getServerSocket(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
 	k = kevent(kq, &new_event, 1, NULL, 0, NULL);
 	/*if (k == -1)
@@ -94,20 +95,20 @@ void WebServer::runWebserv()
 			continue;
 		if (finished_event.flags == EV_EOF)
 		{
-			//std::cout << std::endl << "closing connection" << std::endl;
+			std::cout << std::endl << "closing connection" << std::endl;
 			close(finished_event.ident);
 		}
 		else if (finished_event.ident == (unsigned long)servers[0].getServerSocket())
 		{
-			//std::cout << std::endl << "accept connection" << std::endl;
-			/*if ((serverSocket_acc = accept(servers[0].getServerSocket(), (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
-				Error::functionError();*/
+			std::cout << std::endl << "accept connection" << std::endl;
+			if ((serverSocket_acc = accept(servers[0].getServerSocket(), (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
+				Error::functionError();
 			EV_SET(&new_event, serverSocket_acc, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 			kevent(kq, &new_event, 1, NULL, 0, NULL);
 		}
 		else if (finished_event.filter == EVFILT_READ)
 		{
-			//std::cout << std::endl << "receiving request" << std::endl;
+			std::cout << std::endl << "receiving request" << std::endl;
 			servers[0].addRequest(finished_event.ident);
 			EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
 			kevent(kq, &new_event, 1, NULL, 0, NULL);
@@ -116,7 +117,7 @@ void WebServer::runWebserv()
 		}
 		else if (finished_event.filter == EVFILT_WRITE)
 		{
-			//std::cout << std::endl << "sending response" << std::endl;
+			std::cout << std::endl << "sending response" << std::endl;
 			
 			int fd = open("tab.html", O_RDONLY);
 			char buff2[10000];

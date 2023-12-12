@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ServerParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/20 15:21:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/12 10:30:10 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 12:23:30 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

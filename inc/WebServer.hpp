@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServer.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:13:01 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 10:24:50 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/12 12:44:27 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ class WebServer
 {
 	private:
 		std::vector<class ServerParser> servers;
-		//struct sockaddr_storage acceptedaddrinfo;
+		struct sockaddr_storage acceptedaddrinfo;
 		int serverSocket_acc;
 		socklen_t acceptedaddrinfo_size;
 	public:
