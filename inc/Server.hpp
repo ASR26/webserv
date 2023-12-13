@@ -25,6 +25,7 @@ class	Server
 		std::vector<std::string>	s_name;
 		std::map<int, std::string>	error;
 		int							c_size;
+		bool						index;
 		std::map<int, class Request> requestQueue;
 		int serverSocket;
 

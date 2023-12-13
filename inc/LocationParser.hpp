@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/05 13:24:58 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/13 09:34:11 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ class LocationParser
 		std::vector<std::string>	methods;
 		std::string					root;
 		int							c_size;
+		bool						index;
 			
 	public:
 		LocationParser();

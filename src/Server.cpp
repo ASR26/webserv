@@ -144,7 +144,20 @@ Server::Server(std::string conf)
 			n++;
 		c_size = std::atoi(&conf[n]);
 	}
-	//getInfo();
+	n = conf.find("autoindex");
+	if (n == std::string::npos)
+		index = false;
+	else
+	{
+		i = n;
+		n = conf.find("off", n + 1);
+		if (n != std::string::npos)
+			index = false;
+		n = conf.find("on", i + 1);
+		if (n != std::string::npos)
+			index = true;
+	}
+	getInfo();
 }
 
 Server::~Server()
@@ -168,6 +181,7 @@ void	Server::getInfo()
 		++m_it;
 	}
 	std::cout << "Client size : " << c_size << std::endl;
+	std::cout << "Index : " << index << std::endl;
 	std::cout << std::endl;
 }
 int Server::getServerSocket() const

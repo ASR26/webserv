@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/05 13:27:34 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/13 09:41:57 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,20 @@ LocationParser::LocationParser(std::string conf)
 			n++;
 		c_size = std::atoi(&conf[n]);
 	}
-	//getInfo();
+	n = conf.find("autoindex");
+	if (n == std::string::npos)
+		index = false;
+	else
+	{
+		i = n;
+		n = conf.find("off", n + 1);
+		if (n != std::string::npos)
+			index = false;
+		n = conf.find("on", i + 1);
+		if (n != std::string::npos)
+			index = true;
+	}
+	getInfo();
 }
 
 LocationParser::~LocationParser()
@@ -80,5 +93,6 @@ void	LocationParser::getInfo(void)
 	std::cout << std::endl;
 	std::cout << "Root : " << root << std::endl;
 	std::cout << "Client size : " << c_size << std::endl;
+	std::cout << "Index : " << index << std::endl;
 	std::cout << std::endl;
 }
