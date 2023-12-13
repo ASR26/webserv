@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 13:35:39 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/13 13:56:29 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,21 @@ WebServer::WebServer()
 WebServer::~WebServer()
 {
 	return ;
+}
+
+void WebServer::addRequest(int fd)
+{
+	requestQueue.insert(std::pair<int, class Request>(fd, Request(fd)));
+	//std::cout << "Insert request for fd: " << fd << std::endl;
+	//std::cout << requestQueue.find(fd)->second.fd << std::endl;
+	return ;
+}
+
+int WebServer::existRequest(int fd)
+{
+	if (requestQueue.find(fd) == requestQueue.end())
+		return 0;
+	return 1;
 }
 
 void WebServer::addServer(std::string conf)
@@ -67,7 +82,7 @@ void WebServer::runWebserv()
 {
 	//int c;
 	int k;
-	int r;
+	//int r;
 	struct kevent new_event;
 	struct kevent finished_event;
 	int events;
@@ -95,42 +110,54 @@ void WebServer::runWebserv()
 			continue;
 		if (finished_event.flags == EV_EOF)
 		{
-			std::cout << std::endl << "closing connection" << std::endl;
+			//std::cout << std::endl << "closing connection" << std::endl;
 			close(finished_event.ident);
 		}
 		else if (finished_event.ident == (unsigned long)servers[0].getServerSocket())
 		{
-			std::cout << std::endl << "accept connection" << std::endl;
+			//std::cout << std::endl << "accept connection" << std::endl;
 			if ((serverSocket_acc = accept(servers[0].getServerSocket(), (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
 				Error::functionError();
+			fcntl(serverSocket_acc, F_SETFD , O_NONBLOCK);
 			EV_SET(&new_event, serverSocket_acc, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 			kevent(kq, &new_event, 1, NULL, 0, NULL);
 		}
 		else if (finished_event.filter == EVFILT_READ)
 		{
-			std::cout << std::endl << "receiving request" << std::endl;
-			servers[0].addRequest(finished_event.ident);
-			EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
-			kevent(kq, &new_event, 1, NULL, 0, NULL);
-			EV_SET(&finished_event, serverSocket_acc,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
-			kevent(kq, &finished_event, 1, NULL, 0, NULL);
+			//std::cout << std::endl << "receiving request" << std::endl;
+			if (!existRequest(finished_event.ident))
+				this->addRequest(finished_event.ident);
+			requestQueue.find(finished_event.ident)->second.readRequest();
+			if (requestQueue.find(finished_event.ident)->second.done_read)
+			{
+				EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
+				kevent(kq, &new_event, 1, NULL, 0, NULL);
+				EV_SET(&finished_event, serverSocket_acc,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
+				kevent(kq, &finished_event, 1, NULL, 0, NULL);
+			}
 		}
 		else if (finished_event.filter == EVFILT_WRITE)
 		{
-			std::cout << std::endl << "sending response" << std::endl;
+			//std::cout << std::endl << "sending response" << std::endl;
 			
-			int fd = open("tab.html", O_RDONLY);
-			char buff2[10000];
-			r = read(fd, buff2, 10000);
-			close(fd);
-			write(finished_event.ident, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n", strlen( "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n"));
-			write(finished_event.ident, buff2, r);
-
-			EV_SET(&finished_event, finished_event.ident,  EVFILT_READ, EV_DELETE, 0, 0, NULL);
-			kevent(kq, &finished_event, 1, NULL, 0, NULL);
-			EV_SET(&finished_event, finished_event.ident,  EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-			kevent(kq, &finished_event, 1, NULL, 0, NULL);
-			close(finished_event.ident);
+			requestQueue.find(finished_event.ident)->second.sendResponse();
+			if (requestQueue.find(finished_event.ident)->second.done_write)
+			{
+				requestQueue.erase(requestQueue.find(finished_event.ident));
+				EV_SET(&finished_event, finished_event.ident,  EVFILT_READ, EV_DELETE, 0, 0, NULL);
+				kevent(kq, &finished_event, 1, NULL, 0, NULL);
+				EV_SET(&finished_event, finished_event.ident,  EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+				kevent(kq, &finished_event, 1, NULL, 0, NULL);
+				close(finished_event.ident);
+			}
 		}
 	}
 }
+
+
+/* int fd = open("tab.html", O_RDONLY);
+char buff2[10000];
+r = read(fd, buff2, 10000);
+close(fd);
+write(finished_event.ident, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n", strlen( "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n"));
+write(finished_event.ident, buff2, r); */

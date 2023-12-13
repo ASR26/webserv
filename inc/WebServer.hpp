@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:13:01 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 13:37:05 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/13 10:15:57 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,15 @@ class WebServer
 		struct sockaddr_storage acceptedaddrinfo;
 		int serverSocket_acc;
 		socklen_t acceptedaddrinfo_size;
+		std::map<int, class Request> requestQueue;
 	public:
 		WebServer();
 		~WebServer();
 
 		void addServer(std::string);
 		void runWebserv();
+		void addRequest(int fd);
+		int existRequest(int fd);
 };
 
 #endif
