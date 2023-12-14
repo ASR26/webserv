@@ -22,51 +22,7 @@ Server::Server(std::string conf)
 	std::string::size_type	n;
 	int						i = 0;
 	int						j = 0;
-	struct addrinfo default_addrinfo;
-	struct addrinfo *returned_sockaddr;
 
-	memset(&default_addrinfo, 0, sizeof(struct addrinfo));
-	default_addrinfo.ai_family = AF_INET;
-	default_addrinfo.ai_socktype = SOCK_STREAM;
-	default_addrinfo.ai_flags = AI_PASSIVE;
-	if (getaddrinfo(NULL, "8080", &default_addrinfo, &returned_sockaddr) != 0)
-	{
-		//error
-	}
-	i = 0;
-	struct addrinfo *cpy = returned_sockaddr;
-	while (cpy)
-	{
-		cpy = cpy->ai_next;
-		i++;
-	}
-	std::cout << "returned_sockaddr has " << i << " node(s)" << std::endl;
-
-	/* struct sockaddr_in sockaddr_conf;
-
-	memset(&sockaddr_conf, 0, sizeof(struct sockaddr_in));
-	sockaddr_conf.sin_family = AF_INET;
-	sockaddr_conf.sin_port = htons(8080);
-	sockaddr_conf.sin_addr.s_addr = inet_addr("0.0.0.0"); */
-
-	if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
-	{
-		throw std::runtime_error("Error: socket");
-	}
-	//setsockopt
-	if (bind(serverSocket, returned_sockaddr->ai_addr, returned_sockaddr->ai_addrlen) == -1)
-	{
-		throw std::runtime_error(strerror(errno));
-	}
-	if (listen(serverSocket, 1000) == -1)
-	{
-		throw std::runtime_error("Error: listen");
-	}
-	//freeaddrinfo(returned_sockaddr);
-	//std::cout << "So far so good..." << std::endl;
-	return ;
-
-	
 	n = conf.find("location");
 	if (n == std::string::npos)
 		throw std::exception();
@@ -145,11 +101,38 @@ Server::Server(std::string conf)
 		c_size = std::atoi(&conf[n]);
 	}
 	//getInfo();
+	this->openServerSocket();
+}
+
+Server::Server(const Server& ser)
+{
+	this->location = ser.location;
+	this->port = ser.port;
+	this->port_str = ser.port_str;
+	this->s_name = ser.s_name;
+	this->error = ser.error;
+	this->c_size = ser.c_size;
+	this->serverSocket = ser.serverSocket;
 }
 
 Server::~Server()
 {
 
+}
+
+Server &Server::operator=(const Server & ser)
+{
+	if (this != &ser)
+	{
+		this->location = ser.location;
+		this->port = ser.port;
+		this->port_str = ser.port_str;
+		this->s_name = ser.s_name;
+		this->error = ser.error;
+		this->c_size = ser.c_size;
+		this->serverSocket = ser.serverSocket;
+	}
+	return *this;
 }
 
 void	Server::getInfo()
@@ -170,14 +153,51 @@ void	Server::getInfo()
 	std::cout << "Client size : " << c_size << std::endl;
 	std::cout << std::endl;
 }
+
+
 int Server::getServerSocket() const
 {
 	return this->serverSocket;
 }
 
-void Server::addRequest(int fd)
+void Server::openServerSocket()
 {
-	requestQueue.insert(std::pair<int, class Request>(fd, Request(fd)));
+	struct addrinfo default_addrinfo;
+	struct addrinfo *returned_sockaddr;
+
+	memset(&default_addrinfo, 0, sizeof(struct addrinfo));
+	default_addrinfo.ai_family = AF_INET;
+	default_addrinfo.ai_socktype = SOCK_STREAM;
+	default_addrinfo.ai_flags = AI_PASSIVE;
+	this->port_str = "8080";
+	if (getaddrinfo(NULL, "8080", &default_addrinfo, &returned_sockaddr) != 0)
+	{
+		//error
+	}
+	if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+	{
+		throw std::runtime_error("Error: socket");
+	}
+	//setsockopt
+	if (bind(serverSocket, returned_sockaddr->ai_addr, returned_sockaddr->ai_addrlen) == -1)
+	{
+		throw std::runtime_error(strerror(errno));
+	}
+	if (listen(serverSocket, 1000) == -1)
+	{
+		throw std::runtime_error("Error: listen");
+	}
+	//freeaddrinfo(returned_sockaddr);
+	//std::cout << "So far so good..." << std::endl;
 	return ;
 }
 
+std::string Server::getPort() const
+{
+	return this->port_str;
+}
+
+std::vector<std::string> Server::getServerNames() const
+{
+	return this->s_name;
+}

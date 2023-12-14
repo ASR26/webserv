@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/13 13:57:55 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/14 11:53:54 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ method(""), response(""), done_read(false), done_write(false)
 }
 
 Request::Request(const Request& req): fd(req.fd), body_size(req.body_size), header(req.header), \
-body(req.body), method(req.method), response(req.response), done_read(req.done_read), \
+body(req.body), method(req.method), response(req.response), host(req.host), done_read(req.done_read), \
 done_write(req.done_write)
 {
 	//std::cout << "Created a copy request fd: " << this->fd << std::endl;
@@ -81,6 +81,7 @@ Request& Request::operator=(const Request& req)
 		this->response = req.response;
 		this->done_read = req.done_read;
 		this->done_write = req.done_write;
+		this->host = req.host;
 	}
 	return *this;
 }
@@ -124,12 +125,12 @@ void Request::readRequest()
 	{
 		done_read = true;
 		this->setMethod();
-		/* std::cout << method << std::endl;
+		std::cout << method << std::endl;
 		//std::cout << "done reading" << std::endl;
 		std::cout << "HEADER" << std::endl;
 		std::cout << this->header << std::endl;
-		std::cout << "BODY" << std::endl;
-		std::cout << this->body << std::endl; */
+		//std::cout << "BODY" << std::endl;
+		//std::cout << this->body << std::endl;
 	}
 	return ;
 }
@@ -176,4 +177,30 @@ void Request::setMethod()
 	}
 	if (i == 3)
 		method = "UNKNOWN";
+}
+
+std::string Request::getHeader() const
+{
+	return header;
+}
+
+void Request::setServer(class Server &ser)
+{
+	this->server = ser;
+	return ;
+}
+
+void Request::setHost(std::string h)
+{
+	this->host = h;
+}
+
+std::string Request::getHost() const
+{
+	return this->host;
+}
+
+void Request::setResponse(std::string res)
+{
+	this->response = res;
 }

@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/13 13:56:29 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/14 12:28:21 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,79 @@ void WebServer::addServer(std::string conf)
 	fd.close();
 }
 
+void WebServer::assignServerToRequest(class Request &req)
+{
+	//function needs to be check with properly configured WebServ::servers
+	std::vector<int> index;
+	
+	std::string header = req.getHeader();
+	unsigned long pos_start = header.find("Host: ");
+	unsigned long pos_end = header.substr(pos_start, std::string::npos).find("\r\n");
+	req.setHost(header.substr(pos_start + std::strlen("Host: "), pos_end - std::strlen("Host: ")));
+	//this->host = header.substr(pos_start + std::strlen("Host: "), pos_end - std::strlen("Host: "));
+	std::string port = req.getHost().substr(req.getHost().find(":") + 1, std::string::npos);
+	for (unsigned long i = 0; i < servers.size(); i++)
+	{
+		//std::cout << "port is: " << port << " server port is: " << servers[i].getPort() << std::endl;
+		if (port == servers[i].getPort())
+			index.push_back(i);
+	}
+	std::cout << index.size() << std::endl;
+	std::string server_name;
+	pos_end = req.getHost().rfind(":");
+	//std::cout << "host: " << req.getHost()[pos_end - 1] << std::endl;
+	if (!std::isdigit(req.getHost()[pos_end - 1]))
+	{
+		pos_end = req.getHost().find(".localhost");
+		if (pos_end != std::string::npos)
+		//std::cout << "pos end -> " << pos_end << std::endl;
+		//std::cout << req.getHost() << std::endl;
+			server_name = req.getHost().substr(0, pos_end);
+		//std::cout << server_name << std::endl;
+		else
+			server_name = "";
+	}
+	else
+	{
+		int n = 1;
+		int point_count = 0;
+		while (pos_end - n >= 0 && (std::isdigit(req.getHost()[pos_end - n]) || req.getHost()[pos_end - n] == '.') && point_count < 4)
+		{
+			if (req.getHost()[pos_end - n] == '.')
+				point_count++;
+			n++;
+		}
+		if (pos_end - n < 0)
+			server_name = "";
+		else
+			server_name = req.getHost().substr(0, pos_end - n);
+	}
+	//std::cout << server_name << std::endl;
+	if (server_name.empty())
+	{
+		req.setServer(servers[index[0]]);
+	}
+	else
+	{
+		int found = 0;
+		for (unsigned long i = 0; i < index.size(); i++)
+		{
+			for (unsigned long j = 0; j < servers[index[i]].getServerNames().size(); j++)
+			{
+				if (servers[index[i]].getServerNames()[j] == server_name)
+				{
+					req.setServer(servers[index[i]]);
+					found = 1;
+				}
+			}
+		}
+		if (found == 0)
+		{
+			req.setResponse("HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length: 11\r\n\r\nbad request");//change to error400.html
+		}
+	}
+}
+
 void WebServer::runWebserv()
 {
 	//int c;
@@ -95,7 +168,7 @@ void WebServer::runWebserv()
 	}
 
 	/* Do this in for loop for all servers */
-	std::cout << servers.size() << std::endl;
+	//std::cout << servers.size() << std::endl;
 	EV_SET(&new_event, servers[0].getServerSocket(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
 	k = kevent(kq, &new_event, 1, NULL, 0, NULL);
 	/*if (k == -1)
@@ -130,6 +203,7 @@ void WebServer::runWebserv()
 			requestQueue.find(finished_event.ident)->second.readRequest();
 			if (requestQueue.find(finished_event.ident)->second.done_read)
 			{
+				assignServerToRequest(requestQueue.find(finished_event.ident)->second);
 				EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
 				kevent(kq, &new_event, 1, NULL, 0, NULL);
 				EV_SET(&finished_event, serverSocket_acc,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);

@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/13 13:58:03 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/14 11:03:08 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,10 @@ class Request
 		std::string method;
 		std::string response;
 		void setMethod();
+
+		class Server server;
+
+		std::string host;
 	public:
 		Request();
 		Request(int fd);
@@ -38,6 +42,11 @@ class Request
 		void readRequest();
 		void sendResponse();
 		void formResponse();
+		std::string getHeader() const;
+		void setServer(class Server&);
+		void setHost(std::string);
+		std::string getHost() const;
+		void setResponse(std::string);
 };
 
 #endif

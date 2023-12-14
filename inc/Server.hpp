@@ -21,21 +21,31 @@ class	Server
 {
 	private:
 		std::vector<LocationParser> location;
-		int							port;
+		int							port;//should be vector
+		std::string					port_str;//should be vector
 		std::vector<std::string>	s_name;
 		std::map<int, std::string>	error;
 		int							c_size;
-		std::map<int, class Request> requestQueue;
+		std::string					index;
+		//bool						auto_index;
+		std::vector<std::string>	methods;
+		std::string					root;
+		std::string					redir;
+
 		int serverSocket;
 
 	public:
 		Server();
 		Server(std::string);
+		Server(const Server&);
 		~Server();
+
+		Server &operator=(const Server&);
 		void getInfo(void);
 		int getServerSocket() const;
-		void addRequest(int fd);
-		void formResponse();
+		void openServerSocket();
+		std::string getPort() const;
+		std::vector<std::string> getServerNames() const;
 };
 
 #endif
