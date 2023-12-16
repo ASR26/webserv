@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 13:37:06 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/15 16:07:19 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,5 +60,10 @@
 #include "Error.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+
+
+size_t nbrEqualChar(std::string str1, std::string str2);
+size_t nbrEqualStr(std::vector<std::string> vecstr1, std::vector<std::string> vecstr2);
+std::vector<std::string> split(std::string str, std::string c);
 
 #endif

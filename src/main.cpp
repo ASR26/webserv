@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/13 10:07:41 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/16 09:35:53 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@
 
 int main(int argc, char **argv)
 {
+	(void)argv;
 	if (argc > 2)
 	{
 		std::cout << "Error" << std::endl;
@@ -69,7 +70,8 @@ int main(int argc, char **argv)
 			Server();*/
 		WebServer mywebserver = WebServer();
 		//ServerConfiguration servconf = ServerConfiguration();
-		mywebserver.addServer(argv[1]);
+		//mywebserver.addServer(argv[1]);
+		mywebserver.addTestServer();
 		mywebserver.runWebserv();
 	}
 	catch(const std::exception& e)

@@ -27,7 +27,7 @@ class	Server
 		std::map<int, std::string>	error;
 		int							c_size;
 		std::string					index;
-		//bool						auto_index;
+		bool						auto_index;
 		std::vector<std::string>	methods;
 		std::string					root;
 		std::string					redir;
@@ -46,6 +46,9 @@ class	Server
 		void openServerSocket();
 		std::string getPort() const;
 		std::vector<std::string> getServerNames() const;
+		std::vector<LocationParser> getLocations() const;
+		std::string getRoot() const;
+		bool isAllowedMethod(std::string);
 };
 
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationParser.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/05 13:27:34 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/16 10:42:22 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,11 @@
 
 LocationParser::LocationParser()
 {
-
+	location = "/lazy/test/what";
+	root = "/abc/123/xyz/bye";
+	methods.push_back("GET");
+	methods.push_back("POST");
+	methods.push_back("DELETE");
 }
 
 LocationParser::LocationParser(std::string conf)
@@ -81,4 +85,21 @@ void	LocationParser::getInfo(void)
 	std::cout << "Root : " << root << std::endl;
 	std::cout << "Client size : " << c_size << std::endl;
 	std::cout << std::endl;
+}
+
+std::string LocationParser::getLocation() const
+{
+	return this->location;
+}
+
+bool LocationParser::isAllowedMethod(std::string meth)
+{
+	if (std::find(methods.begin(), methods.end(), meth) == methods.end())
+		return false;
+	return true;
+}
+
+std::string LocationParser::getRoot() const
+{
+	return this->root;
 }

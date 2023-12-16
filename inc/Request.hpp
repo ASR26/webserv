@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/14 11:03:08 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/16 09:44:34 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ class Request
 		class Server server;
 
 		std::string host;
+		std::string request_file;
+		std::string request_file_path;
+		int loc_index;
 	public:
 		Request();
 		Request(int fd);
@@ -42,6 +45,17 @@ class Request
 		void readRequest();
 		void sendResponse();
 		void formResponse();
+		void responseGet();
+		void responsePost();
+		void responseDelete();
+		void selectLocation();
+		bool isAllowedMethod();
+
+		void executeGetRequest();
+		void executePostRequest();
+		void executeDeleteRequest();
+		
+
 		std::string getHeader() const;
 		void setServer(class Server&);
 		void setHost(std::string);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationParser.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/05 13:24:58 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/16 10:14:52 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,10 @@ class LocationParser
 		LocationParser(std::string);
 		~LocationParser();
 		void	getInfo(void);
+		std::string getLocation() const;
+
+		bool isAllowedMethod(std::string meth);
+		std::string getRoot() const;
 };
 
 #endif

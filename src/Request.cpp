@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/14 11:53:54 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/16 10:48:43 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,18 +125,102 @@ void Request::readRequest()
 	{
 		done_read = true;
 		this->setMethod();
-		std::cout << method << std::endl;
+		//std::cout << method << std::endl;
 		//std::cout << "done reading" << std::endl;
-		std::cout << "HEADER" << std::endl;
-		std::cout << this->header << std::endl;
+		//std::cout << "HEADER" << std::endl;
+		//std::cout << this->header << std::endl;
 		//std::cout << "BODY" << std::endl;
 		//std::cout << this->body << std::endl;
 	}
 	return ;
 }
 
+void Request::selectLocation()
+{
+	std::vector<std::string> directories = split(request_file, "/");
+	loc_index = -1;
+	size_t max_equal = 0;
+	size_t equal;
+	for (size_t i = 0; i < server.getLocations().size(); i++)
+	{
+		equal = nbrEqualStr(directories, split(server.getLocations()[i].getLocation(), "/"));
+		if (equal >= split(server.getLocations()[i].getLocation(), "/").size() && equal > max_equal)
+		{
+			max_equal = equal;
+			loc_index = i;
+		}
+	}
+}
+
+bool Request::isAllowedMethod()
+{
+	if (loc_index == -1)
+		return (server.isAllowedMethod(method));
+	else
+		return server.getLocations()[loc_index].isAllowedMethod(method);
+}
+
+void Request::executeGetRequest()
+{
+	if (access(request_file_path.c_str(), F_OK))
+	{
+		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+		return ;
+	}
+	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 14\r\n\r\nhello from get";
+}
+
+void Request::executePostRequest()
+{
+	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nhello from post";
+}
+
+void Request::executeDeleteRequest()
+{
+	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 17\r\n\r\nhello from delete";
+}
+
 void Request::formResponse()
 {
+	unsigned long pos_space = header.substr(header.find(" ") + 1, std::string::npos).find(" ");
+	request_file = header.substr(header.find(" ") + 1, pos_space);
+	//request_file_path = server.getRoot() + request_file;
+	//request_file_path = std::string(".") + request_file; //change to actual root!!!
+	/* if (access(request_file_path.c_str(), F_OK))
+	{
+		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+		return ;
+	} */
+	selectLocation();
+	if (!isAllowedMethod())
+	{
+		response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nnot allowed";
+		return ;
+	}
+	if (loc_index >= 0 && !server.getLocations()[loc_index].getRoot().empty())
+	{
+		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getLocations()[loc_index].getRoot());
+	}
+	request_file_path = std::string(".") + server.getRoot() + request_file;
+	//std::cout << request_file_path << std::endl;
+	std::string meths[3] = {"GET", "POST", "DELETE"};
+	int i = 0;
+	for (; i < 3; i++)
+		if (method == meths[i])
+			break;
+	switch (i)
+	{
+		case 0:
+			executeGetRequest();
+			break;
+		case 1:
+			executePostRequest();
+			break;
+		case 2:
+			executeDeleteRequest();
+			break;
+	}
+	return ;
 	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 5\r\n\r\nhello";
 }
 

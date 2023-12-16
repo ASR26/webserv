@@ -14,7 +14,12 @@
 
 Server::Server()
 {
-
+	port_str = "8080";
+	methods.push_back("GET");
+	methods.push_back("POST");
+	methods.push_back("DELETE");
+	auto_index = false;
+	location.push_back(LocationParser());
 }
 
 Server::Server(std::string conf)
@@ -169,8 +174,8 @@ void Server::openServerSocket()
 	default_addrinfo.ai_family = AF_INET;
 	default_addrinfo.ai_socktype = SOCK_STREAM;
 	default_addrinfo.ai_flags = AI_PASSIVE;
-	this->port_str = "8080";
-	if (getaddrinfo(NULL, "8080", &default_addrinfo, &returned_sockaddr) != 0)
+	//this->port_str = "8080";//remove this later
+	if (getaddrinfo(NULL, port_str.c_str(), &default_addrinfo, &returned_sockaddr) != 0)
 	{
 		//error
 	}
@@ -200,4 +205,21 @@ std::string Server::getPort() const
 std::vector<std::string> Server::getServerNames() const
 {
 	return this->s_name;
+}
+
+std::vector<LocationParser> Server::getLocations() const
+{
+	return this->location;
+}
+
+std::string Server::getRoot() const
+{
+	return this->root;
+}
+
+bool Server::isAllowedMethod(std::string meth)
+{
+	if (std::find(methods.begin(), methods.end(), meth) == methods.end())
+		return false;
+	return true;
 }

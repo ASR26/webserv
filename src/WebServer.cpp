@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/14 12:28:21 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/16 09:36:24 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void WebServer::assignServerToRequest(class Request &req)
 		if (port == servers[i].getPort())
 			index.push_back(i);
 	}
-	std::cout << index.size() << std::endl;
+	//std::cout << index.size() << std::endl;
 	std::string server_name;
 	pos_end = req.getHost().rfind(":");
 	//std::cout << "host: " << req.getHost()[pos_end - 1] << std::endl;
@@ -149,6 +149,7 @@ void WebServer::assignServerToRequest(class Request &req)
 			req.setResponse("HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length: 11\r\n\r\nbad request");//change to error400.html
 		}
 	}
+	
 }
 
 void WebServer::runWebserv()
@@ -235,3 +236,10 @@ r = read(fd, buff2, 10000);
 close(fd);
 write(finished_event.ident, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n", strlen( "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n"));
 write(finished_event.ident, buff2, r); */
+
+
+void WebServer::addTestServer()
+{
+	servers.push_back(Server());
+	servers[0].openServerSocket();
+}
