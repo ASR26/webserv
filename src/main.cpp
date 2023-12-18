@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/13 09:50:47 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/18 10:55:47 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 		WebServer mywebserver = WebServer();
 		//ServerConfiguration servconf = ServerConfiguration();
 		mywebserver.addServer(argv[1]);
-		mywebserver.runWebserv();
+		//mywebserver.runWebserv();
 	}
 	catch(const std::exception& e)
 	{

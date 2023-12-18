@@ -22,8 +22,8 @@ Server::Server(std::string conf)
 	std::string::size_type	n;
 	int						i = 0;
 	int						j = 0;
-	struct addrinfo default_addrinfo;
-	struct addrinfo *returned_sockaddr;
+	//struct addrinfo default_addrinfo;
+	//struct addrinfo *returned_sockaddr;
 
 	n = conf.find("location");
 	if (n == std::string::npos)
@@ -40,29 +40,44 @@ Server::Server(std::string conf)
 				if (conf[i] == '{')
 					j++;
 				else if (conf[i] == '}')
-					j--;
+					j--;  
 			location.push_back(LocationParser(conf.substr(n, i - n)));
-			n = conf.find("location", i);
+			if (conf.find("*.", n) < (unsigned long)i && conf.find("cgi_pass", n) < (unsigned long)i)
+				cgi[conf.substr(conf.find("*.", n) + 2, conf.find(" ", n + 9))] = location.back().getCGI();
+			std::cout << location.back().getCGI();
+			conf.erase(n, i - n);
+			n = conf.find("location");
 		}
 	}
 	n = conf.find("listen");
 	if (n == std::string::npos)
-		port = 80;
+		port.push_back("80");
 	else
-		while (conf[++n] && !isdigit(conf[n]))
-			port = std::atoi(&conf[n]);
+	{
+		i = n + 6;
+		while (conf[i] == ' ' && conf[i])
+			i++;
+		n = i;
+		while (conf[i] && conf[i - 1] != '\n')
+		{
+			if (conf[i] == ' ' || conf[i] == '\n')
+			{
+				port.push_back(conf.substr(n, i - n));
+				n = i + 1;
+			}
+			i++;
+		}
+	}
 	n = conf.find("server_name");
-	if (n == std::string::npos)
-		s_name.push_back("host_name");
-	else
+	if (n != std::string::npos)
 	{
 		i = n + 11;
 		while (conf[i] == ' ' && conf[i])
 			i++;
 		n = i;
-		while (conf[i] && conf[i] != '\n')
+		while (conf[i] && conf[i - 1] != '\n')
 		{
-			if (conf[i] == ' ' || conf[i] == ';')
+			if (conf[i] == ' ' || conf[i] == '\n')
 			{
 				s_name.push_back(conf.substr(n, i - n));
 				n = i + 1;
@@ -104,19 +119,76 @@ Server::Server(std::string conf)
 	}
 	n = conf.find("autoindex");
 	if (n == std::string::npos)
-		index = false;
+		auto_index = false;
 	else
 	{
 		i = n;
 		n = conf.find("off", n + 1);
 		if (n != std::string::npos)
-			index = false;
+			auto_index = false;
 		n = conf.find("on", i + 1);
 		if (n != std::string::npos)
-			index = true;
+			auto_index = true;
+	}
+	n = conf.find("index");
+	while (n != std::string::npos && isalpha(conf[n - 1]))
+		n = conf.find("index", ++n);
+	if (n == std::string::npos)
+		index = "index.html";
+	else
+		index = conf.substr(n + 6, conf.find("\n", n + 1) - (n + 6));
+	
+	n = conf.find("allow_methods");
+	if (n == std::string::npos)
+		methods.push_back("GET");
+	else
+	{
+		n = conf.find("GET");
+		if (n != std::string::npos)
+			methods.push_back(conf.substr(n, 3));
+		n = conf.find("POST");
+		if (n != std::string::npos)
+			methods.push_back(conf.substr(n, 4));
+		n = conf.find("DELETE");
+		if (n != std::string::npos)
+			methods.push_back(conf.substr(n, 5));
+		std::vector<LocationParser>::iterator	it = location.begin();
+		while (it != location.end())
+		{
+			if(it->getMethodsSize() == 0)
+				it->setMethods(methods);
+			++it;
+		}
+		
+	}
+	n = conf.find("root");
+	if (n == std::string::npos)
+		root = "";
+	else
+	{
+		i = n + 5;
+		n = conf.find("\n", n + 1);
+		root = conf.substr(i, n - i);
+	}
+	n = conf.find("upload");
+	if (n == std::string::npos)
+		upload = "";
+	else
+		upload = conf.substr(n + 7, conf.find("\n", n + 1) - n - 7);
+	n = conf.find("return");
+	if (n == std::string::npos)
+	{
+		redirec.first = "";
+		redirec.second = "";
+	}
+	else
+	{
+		redirec.first = conf.substr(n + 7, conf.find(" ", n + 7) - n - 7);
+		n = conf.find(" ", n + 8);
+		redirec.second = conf.substr(n + 1, conf.find("\n", n + 1) - n - 1);
 	}
 	getInfo();
-	memset(&default_addrinfo, 0, sizeof(struct addrinfo));
+	/*memset(&default_addrinfo, 0, sizeof(struct addrinfo));
 	default_addrinfo.ai_family = AF_INET;
 	default_addrinfo.ai_socktype = SOCK_STREAM;
 	default_addrinfo.ai_flags = AI_PASSIVE;
@@ -133,12 +205,12 @@ Server::Server(std::string conf)
 	}
 	std::cout << "returned_sockaddr has " << i << " node(s)" << std::endl;
 
-	/* struct sockaddr_in sockaddr_conf;
+	struct sockaddr_in sockaddr_conf;
 
 	memset(&sockaddr_conf, 0, sizeof(struct sockaddr_in));
 	sockaddr_conf.sin_family = AF_INET;
 	sockaddr_conf.sin_port = htons(8080);
-	sockaddr_conf.sin_addr.s_addr = inet_addr("0.0.0.0"); */
+	sockaddr_conf.sin_addr.s_addr = inet_addr("0.0.0.0"); 
 
 	if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 	{
@@ -155,7 +227,7 @@ Server::Server(std::string conf)
 	}
 	//freeaddrinfo(returned_sockaddr);
 	//std::cout << "So far so good..." << std::endl;
-	return ;
+	return ;*/
 }
 
 Server::~Server()
@@ -165,7 +237,15 @@ Server::~Server()
 
 void	Server::getInfo()
 {
-	std::cout << "Server" << std::endl << "Port : " << port << std::endl;
+	std::cout << "Server" << std::endl;
+	std::vector<std::string>::iterator	p_it = port.begin();
+	std:: cout << "Port : ";
+	while (p_it != port.end())
+	{
+		std:: cout << *p_it << " ";
+		++p_it;
+	}
+	std::cout << std::endl;
 	std::vector<std::string>::iterator v_it = s_name.begin();
 	while (v_it != s_name.end())
 	{	
@@ -178,8 +258,20 @@ void	Server::getInfo()
 		std::cout << "Error page : " << m_it->first << " " << m_it->second << std::endl;
 		++m_it;
 	}
+	std::vector<std::string>::iterator	meth_it = methods.begin();
+	std::cout << "Allow methods : ";
+	while (meth_it != methods.end())
+	{
+		std::cout << *meth_it << " ";
+		++meth_it;
+	}
+	std::cout << std::endl;
 	std::cout << "Client size : " << c_size << std::endl;
+	std::cout << "Auto index : " << auto_index << std::endl;
 	std::cout << "Index : " << index << std::endl;
+	std::cout << "Root : " << root << std::endl;
+	std::cout << "Upload : " << upload << std::endl;
+	std::cout << "Redirec : " << redirec.first << " " << redirec.second << std::endl;
 	std::cout << std::endl;
 }
 int Server::getServerSocket() const
