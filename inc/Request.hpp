@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/16 09:44:34 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/17 09:25:27 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ class Request
 		std::string request_file;
 		std::string request_file_path;
 		int loc_index;
+
+		std::string query_string;
 	public:
 		Request();
 		Request(int fd);

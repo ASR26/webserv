@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/16 10:48:43 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/19 15:15:42 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,12 +162,60 @@ bool Request::isAllowedMethod()
 
 void Request::executeGetRequest()
 {
+	if (request_file_path.find("?") != std::string::npos)
+	{
+		query_string = request_file_path.substr(request_file_path.find("?") + 1, std::string::npos);
+		request_file_path = request_file_path.substr(0, request_file_path.find("?"));
+		std::cout << query_string << std::endl;
+		std::cout << request_file_path << std::endl;
+		//separate query string
+	}
 	if (access(request_file_path.c_str(), F_OK))
 	{
 		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
 		return ;
 	}
-	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 14\r\n\r\nhello from get";
+	struct stat buf;
+	stat(request_file_path.c_str(), &buf);//check what happens if not all directories in path can be excuted
+	if (!S_ISDIR(buf.st_mode))
+	{
+		//check if need cgi
+		std::ifstream file(request_file_path);
+		std::string str, content;
+		if (file.bad() || file.fail())
+		{
+			response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nforbidden";
+			return ;
+		}
+		while (!file.eof())
+		{
+			getline(file, str);
+			content += str;
+			content.push_back('\n');
+		}
+		file.close();
+		int i = content.size();
+		std::ostringstream s;
+		s << i;
+		std::string content_len(s.str());	
+
+		response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
+	}
+	else
+	{
+		if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || server.getAutoIndex())
+		{
+			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 51\r\n\r\nwhy are you asking for a directory? You get a list.";
+		}
+		else
+		{
+			if (loc_index >= 0)
+			{
+
+			}
+		}
+		response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 35\r\n\r\nwhy are you asking for a directory?";
+	}
 }
 
 void Request::executePostRequest()
@@ -197,11 +245,65 @@ void Request::formResponse()
 		response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nnot allowed";
 		return ;
 	}
-	if (loc_index >= 0 && !server.getLocations()[loc_index].getRoot().empty())
+	if (loc_index >= 0 && !server.getLocations()[loc_index].getRedirpath().empty())
+	{
+		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getLocations()[loc_index].getRedirpath());
+		//request_file_path = std::string(".") + request_file;
+		//std::cout << request_file_path << std::endl;
+		if (access(request_file.c_str(), F_OK))
+		{
+			if (method == "POST")
+				response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nbad request";
+			else
+				response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		}
+		else
+		{
+			if (method == "GET" || method == "DELETE")
+				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+			else
+			{
+				if (access(request_file.substr(0, request_file.rfind("/")).c_str(), F_OK))
+					response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file.substr(0, request_file.rfind("/")) + std::string("\r\n\r\n");
+				else
+					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+			}
+		}
+		return ;
+	}
+	else if (!server.getRedirpath().empty())
+	{
+		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getRedirpath());
+		request_file_path = std::string(".") + request_file;
+		std::cout << request_file_path << std::endl;
+		if (access(request_file.c_str(), F_OK))
+		{
+			if (method == "POST")
+				response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nbad request";
+			else
+				response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		}
+		else
+		{
+			if (method == "GET" || method == "DELETE")
+				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+			else
+			{
+				if (access(request_file.substr(0, request_file.rfind("/")).c_str(), F_OK))
+					response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file.substr(0, request_file.rfind("/")) + std::string("\r\n\r\n");
+				else
+					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+			}
+		}
+		return ;
+	}
+	else if (loc_index >= 0 && !server.getLocations()[loc_index].getRoot().empty())
 	{
 		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getLocations()[loc_index].getRoot());
+		request_file_path = std::string(".") + request_file;
 	}
-	request_file_path = std::string(".") + server.getRoot() + request_file;
+	else
+		request_file_path = std::string(".") + server.getRoot() + request_file;
 	//std::cout << request_file_path << std::endl;
 	std::string meths[3] = {"GET", "POST", "DELETE"};
 	int i = 0;
@@ -222,6 +324,7 @@ void Request::formResponse()
 	}
 	return ;
 	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 5\r\n\r\nhello";
+	return ;
 }
 
 void Request::sendResponse()

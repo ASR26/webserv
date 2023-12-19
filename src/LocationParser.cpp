@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/16 10:42:22 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/19 15:32:40 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 
 LocationParser::LocationParser()
 {
-	location = "/lazy/test/what";
+	//remove all this later
+	location = "/dir1";
 	root = "/abc/123/xyz/bye";
+	redir_path = "https://en.wikipedia.org/wiki";
 	methods.push_back("GET");
 	methods.push_back("POST");
 	methods.push_back("DELETE");
@@ -102,4 +104,19 @@ bool LocationParser::isAllowedMethod(std::string meth)
 std::string LocationParser::getRoot() const
 {
 	return this->root;
+}
+
+std::string LocationParser::getRedirpath() const
+{
+	return this->redir_path;
+}
+
+std::string LocationParser::getRedircode() const
+{
+	return this->redir_code;
+}
+
+bool LocationParser::getAutoIndex() const
+{
+	return this->auto_index;
 }

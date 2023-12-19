@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/16 10:14:52 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/19 10:09:54 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,10 @@ class LocationParser
 		std::vector<std::string>	methods;
 		std::string					root;
 		int							c_size;
+		std::string					redir_path;
+		std::string					redir_code;
+		bool						auto_index;
+		std::string					index;
 			
 	public:
 		LocationParser();
@@ -31,6 +35,10 @@ class LocationParser
 
 		bool isAllowedMethod(std::string meth);
 		std::string getRoot() const;
+		std::string getRedirpath() const;
+		std::string getRedircode() const;
+		bool getAutoIndex() const;
+		
 };
 
 #endif

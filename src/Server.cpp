@@ -14,6 +14,7 @@
 
 Server::Server()
 {
+	//remove all this later
 	port_str = "8080";
 	methods.push_back("GET");
 	methods.push_back("POST");
@@ -222,4 +223,19 @@ bool Server::isAllowedMethod(std::string meth)
 	if (std::find(methods.begin(), methods.end(), meth) == methods.end())
 		return false;
 	return true;
+}
+
+std::string Server::getRedirpath() const
+{
+	return this->redir_path;
+}
+
+bool Server::getAutoIndex() const
+{
+	return this->auto_index;
+}
+
+std::string Server::getIndex() const
+{
+	return this->index;
 }

@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/15 16:07:19 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/17 10:16:26 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@
 #include <signal.h>
 /* kqueue kevent */
 #include <sys/event.h>
+#include <sys/stat.h>
 
 
 
@@ -50,6 +51,8 @@
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
 
 
 #include "Server.hpp"

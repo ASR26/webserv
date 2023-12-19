@@ -30,7 +30,7 @@ class	Server
 		bool						auto_index;
 		std::vector<std::string>	methods;
 		std::string					root;
-		std::string					redir;
+		std::string					redir_path;
 
 		int serverSocket;
 
@@ -49,6 +49,9 @@ class	Server
 		std::vector<LocationParser> getLocations() const;
 		std::string getRoot() const;
 		bool isAllowedMethod(std::string);
+		std::string getRedirpath() const;
+		bool getAutoIndex() const;
+		std::string getIndex() const;
 };
 
 #endif
