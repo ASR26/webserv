@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/18 15:18:02 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/19 15:34:55 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@ class LocationParser
 		std::string							index;
 		std::pair<std::string, std::string>	redirec;
 		std::string							cgi_pass;
-			
+		std::map<int, std::string>			error;
+		
 	public:
 		LocationParser();
 		LocationParser(std::string);

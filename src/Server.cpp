@@ -25,6 +25,7 @@ Server::Server(std::string conf)
 	//struct addrinfo default_addrinfo;
 	//struct addrinfo *returned_sockaddr;
 
+	conf.erase(0, 6);
 	n = conf.find("location");
 	if (n == std::string::npos)
 		throw std::exception();
@@ -44,11 +45,11 @@ Server::Server(std::string conf)
 			location.push_back(LocationParser(conf.substr(n, i - n)));
 			if (conf.find("*.", n) < (unsigned long)i && conf.find("cgi_pass", n) < (unsigned long)i)
 				cgi[conf.substr(conf.find("*.", n) + 2, conf.find(" ", n + 9))] = location.back().getCGI();
-			std::cout << location.back().getCGI();
 			conf.erase(n, i - n);
 			n = conf.find("location");
 		}
 	}
+
 	n = conf.find("listen");
 	if (n == std::string::npos)
 		port.push_back("80");
@@ -67,7 +68,9 @@ Server::Server(std::string conf)
 			}
 			i++;
 		}
+		conf.erase(conf.find("listen"), conf.find("\n", conf.find("listen")) - conf.find("listen"));
 	}
+
 	n = conf.find("server_name");
 	if (n != std::string::npos)
 	{
@@ -84,7 +87,9 @@ Server::Server(std::string conf)
 			}
 			i++;
 		}
+		conf.erase(conf.find("server_name"), conf.find("\n", conf.find("server_name")) - conf.find("server_name"));
 	}
+
 	n = conf.find("error_page");
 	if (n == std::string::npos)
 		error[404] = "default_location";
@@ -105,9 +110,11 @@ Server::Server(std::string conf)
 				error[std::atoi(&conf[n])] = conf.substr(j, i - j);
 				n += 1 + std::to_string(std::atoi(&conf[n])).length();
 			}
+			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
 			n = conf.find("error_page", n);
 		}
 	}
+
 	n = conf.find("client_max_body_size");
 	if (n == std::string::npos)
 		c_size = 1;
@@ -116,7 +123,9 @@ Server::Server(std::string conf)
 		while (conf[n] != ' ')
 			n++;
 		c_size = std::atoi(&conf[n]);
+		conf.erase(conf.find("client_max_body_size"), conf.find("\n", conf.find("client_max_body_size")) - conf.find("client_max_body_size"));
 	}
+
 	n = conf.find("autoindex");
 	if (n == std::string::npos)
 		auto_index = false;
@@ -129,29 +138,44 @@ Server::Server(std::string conf)
 		n = conf.find("on", i + 1);
 		if (n != std::string::npos)
 			auto_index = true;
+		conf.erase(conf.find("autoindex"), conf.find("\n", conf.find("autoindex")) - conf.find("autoindex"));	
 	}
+
 	n = conf.find("index");
 	while (n != std::string::npos && isalpha(conf[n - 1]))
 		n = conf.find("index", ++n);
 	if (n == std::string::npos)
 		index = "index.html";
 	else
+	{
 		index = conf.substr(n + 6, conf.find("\n", n + 1) - (n + 6));
-	
+		conf.erase(n, conf.find("\n", n + 1) - n);
+	}
+
 	n = conf.find("allow_methods");
 	if (n == std::string::npos)
 		methods.push_back("GET");
 	else
 	{
+		conf.erase(n, 13);
 		n = conf.find("GET");
 		if (n != std::string::npos)
+		{
 			methods.push_back(conf.substr(n, 3));
+			conf.erase(n, 3);
+		}
 		n = conf.find("POST");
 		if (n != std::string::npos)
+		{
 			methods.push_back(conf.substr(n, 4));
+			conf.erase(n, 4);
+		}
 		n = conf.find("DELETE");
 		if (n != std::string::npos)
+		{
 			methods.push_back(conf.substr(n, 5));
+			conf.erase(n, 5);
+		}
 		std::vector<LocationParser>::iterator	it = location.begin();
 		while (it != location.end())
 		{
@@ -159,8 +183,8 @@ Server::Server(std::string conf)
 				it->setMethods(methods);
 			++it;
 		}
-		
 	}
+
 	n = conf.find("root");
 	if (n == std::string::npos)
 		root = "";
@@ -169,12 +193,20 @@ Server::Server(std::string conf)
 		i = n + 5;
 		n = conf.find("\n", n + 1);
 		root = conf.substr(i, n - i);
+		if (root[root.length() - 1] == '/')
+			throw std::exception();
+		conf.erase(conf.find("root"), conf.find("\n", conf.find("root")) - conf.find("root"));
 	}
+
 	n = conf.find("upload");
 	if (n == std::string::npos)
 		upload = "";
 	else
+	{
 		upload = conf.substr(n + 7, conf.find("\n", n + 1) - n - 7);
+		conf.erase(conf.find("upload"), conf.find("\n", conf.find("upload")) - conf.find("upload"));
+	}
+
 	n = conf.find("return");
 	if (n == std::string::npos)
 	{
@@ -186,8 +218,16 @@ Server::Server(std::string conf)
 		redirec.first = conf.substr(n + 7, conf.find(" ", n + 7) - n - 7);
 		n = conf.find(" ", n + 8);
 		redirec.second = conf.substr(n + 1, conf.find("\n", n + 1) - n - 1);
+		conf.erase(conf.find("return"), conf.find("\n", conf.find("return")) - conf.find("return"));
 	}
+
+	i = -1;
+	while (conf[++i])
+		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
+			throw std::exception();
+	
 	getInfo();
+
 	/*memset(&default_addrinfo, 0, sizeof(struct addrinfo));
 	default_addrinfo.ai_family = AF_INET;
 	default_addrinfo.ai_socktype = SOCK_STREAM;
