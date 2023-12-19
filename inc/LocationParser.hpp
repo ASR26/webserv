@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/19 10:09:54 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/19 18:31:22 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class LocationParser
 		std::string getRedirpath() const;
 		std::string getRedircode() const;
 		bool getAutoIndex() const;
+		std::string getIndex() const;
 		
 };
 

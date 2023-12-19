@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/19 15:15:42 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/19 18:34:42 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,9 +209,63 @@ void Request::executeGetRequest()
 		}
 		else
 		{
-			if (loc_index >= 0)
+			if (loc_index >= 0 && !server.getLocations()[loc_index].getRoot().empty())
 			{
+				request_file_path = std::string(".") + server.getLocations()[loc_index].getRoot() + std::string("/") + server.getLocations()[loc_index].getIndex();
+				if (access(request_file_path.c_str(), F_OK))
+				{
+					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+					return ;
+				}
+				std::ifstream file(request_file_path);
+				std::string str, content;
+				if (file.bad() || file.fail())
+				{
+					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nforbidden";
+					return ;
+				}
+				while (!file.eof())
+				{
+					getline(file, str);
+					content += str;
+					content.push_back('\n');
+				}
+				file.close();
+				int i = content.size();
+				std::ostringstream s;
+				s << i;
+				std::string content_len(s.str());	
 
+				response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
+			}
+			else
+			{
+				request_file_path = std::string(".") + server.getRoot() + std::string("/") + server.getIndex();
+				if (access(request_file_path.c_str(), F_OK))
+				{
+					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+					return ;
+				}
+				std::ifstream file(request_file_path);
+				std::string str, content;
+				if (file.bad() || file.fail())
+				{
+					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nforbidden";
+					return ;
+				}
+				while (!file.eof())
+				{
+					getline(file, str);
+					content += str;
+					content.push_back('\n');
+				}
+				file.close();
+				int i = content.size();
+				std::ostringstream s;
+				s << i;
+				std::string content_len(s.str());	
+
+				response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
 			}
 		}
 		response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 35\r\n\r\nwhy are you asking for a directory?";
