@@ -20,18 +20,18 @@
 class	Server
 {
 	private:
-		std::vector<LocationParser> location;
-		int							port;//should be vector
-		std::string					port_str;//should be vector
-		std::vector<std::string>	s_name;
-		std::map<int, std::string>	error;
-		int							c_size;
-		std::string					index;
-		bool						auto_index;
-		std::vector<std::string>	methods;
-		std::string					root;
-		std::string					redir_path;
-
+		std::vector<LocationParser> 		location;
+		std::vector<std::string>			port;
+		std::vector<std::string>			s_name;
+		std::map<int, std::string>			error;
+		int									c_size;
+		bool								auto_index;
+		std::string 						index;
+		std::vector<std::string>			methods;
+		std::string							root;
+		std::string							upload;
+		std::pair<std::string, std::string>	redirec;
+		std::map<std::string, std::string>	cgi;
 		int serverSocket;
 
 	public:

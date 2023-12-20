@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/19 18:31:22 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 07:11:05 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,27 +17,31 @@
 class LocationParser
 {
 	private:
-		std::string					location;
-		std::vector<std::string>	methods;
-		std::string					root;
-		int							c_size;
-		std::string					redir_path;
-		std::string					redir_code;
-		bool						auto_index;
-		std::string					index;
+		std::string							location;
+		std::vector<std::string>			methods;
+		std::string							root;
+		int									c_size;
+		bool								auto_index;
+		std::string							upload;
+		std::string							index;
+		std::pair<std::string, std::string>	redirec;
+		std::string							cgi_pass;
+		std::map<int, std::string>			error;
 			
 	public:
 		LocationParser();
 		LocationParser(std::string);
 		~LocationParser();
-		void	getInfo(void);
+		void		getInfo(void);
+		size_t		getMethodsSize() const;
+		void		setMethods(std::vector<std::string>);
 		std::string getLocation() const;
-
-		bool isAllowedMethod(std::string meth);
+		std::string	getCGI() const;
+		bool 		isAllowedMethod(std::string meth);
 		std::string getRoot() const;
 		std::string getRedirpath() const;
 		std::string getRedircode() const;
-		bool getAutoIndex() const;
+		bool		getAutoIndex() const;
 		std::string getIndex() const;
 		
 };
