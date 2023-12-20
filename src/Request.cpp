@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/20 17:24:18 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 18:36:44 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,6 +206,7 @@ void Request::executeGetRequest()
 		if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || server.getAutoIndex())
 		{
 			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 51\r\n\r\nwhy are you asking for a directory? You get a list.";
+			//list directory here
 		}
 		else
 		{
@@ -268,7 +269,7 @@ void Request::executeGetRequest()
 				response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
 			}
 		}
-		response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 35\r\n\r\nwhy are you asking for a directory?";
+		//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 35\r\n\r\nwhy are you asking for a directory?";
 	}
 }
 

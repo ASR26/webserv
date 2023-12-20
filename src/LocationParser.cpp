@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/20 15:21:49 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 18:26:47 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ LocationParser::LocationParser(std::string conf)
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t')
-			throw std::exception();
+			throw std::runtime_error("Error: 4");
 	//getInfo();
 }
 

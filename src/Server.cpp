@@ -34,7 +34,7 @@ Server::Server(std::string conf)
 	conf.erase(0, 6);
 	n = conf.find("location");
 	if (n == std::string::npos)
-		throw std::exception();//porque exception cuando no hay location?
+		throw std::runtime_error("Error: 1");//porque exception cuando no hay location?
 	else
 	{
 		while (n != std::string::npos)
@@ -200,7 +200,7 @@ Server::Server(std::string conf)
 		n = conf.find("\n", n + 1);
 		root = trimSpaces(conf.substr(i, n - i));
 		if (root[root.length() - 1] == '/')
-			throw std::exception();
+			throw std::runtime_error("Error: 2");
 		conf.erase(conf.find("root"), conf.find("\n", conf.find("root")) - conf.find("root"));
 	}
 
@@ -230,7 +230,7 @@ Server::Server(std::string conf)
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
-			throw std::exception();
+			throw std::runtime_error("Error: 3");
 	
 	//getInfo();
 
