@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 08:30:43 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/16 10:41:21 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 14:02:34 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,4 +56,11 @@ std::vector<std::string> split(std::string str, std::string c)
 		}
 	}
 	return all_words;
+}
+
+std::string trimSpaces(std::string str)
+{
+	while (str.back() == ' ')
+		str.pop_back();
+	return str;
 }

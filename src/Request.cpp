@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/19 18:34:42 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 17:24:18 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -284,73 +284,76 @@ void Request::executeDeleteRequest()
 
 void Request::formResponse()
 {
+	server.getInfo();
 	unsigned long pos_space = header.substr(header.find(" ") + 1, std::string::npos).find(" ");
 	request_file = header.substr(header.find(" ") + 1, pos_space);
-	//request_file_path = server.getRoot() + request_file;
-	//request_file_path = std::string(".") + request_file; //change to actual root!!!
-	/* if (access(request_file_path.c_str(), F_OK))
-	{
-		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
-		return ;
-	} */
+	// /* if (access(request_file_path.c_str(), F_OK))
+	// {
+	// 	response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+	// 	return ;
+	// } */
 	selectLocation();
 	if (!isAllowedMethod())
 	{
 		response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nnot allowed";
-		return ;
+	 	return ;
 	}
 	if (loc_index >= 0 && !server.getLocations()[loc_index].getRedirpath().empty())
 	{
 		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getLocations()[loc_index].getRedirpath());
 		//request_file_path = std::string(".") + request_file;
 		//std::cout << request_file_path << std::endl;
-		if (access(request_file.c_str(), F_OK))
-		{
-			if (method == "POST")
-				response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nbad request";
-			else
-				response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
-		}
-		else
-		{
-			if (method == "GET" || method == "DELETE")
-				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
-			else
-			{
-				if (access(request_file.substr(0, request_file.rfind("/")).c_str(), F_OK))
-					response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file.substr(0, request_file.rfind("/")) + std::string("\r\n\r\n");
-				else
-					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
-			}
-		}
+		std::cout << request_file << std::endl;
+		//std::cout << request_file_path << std::endl;
+		response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		// if (access(request_file.c_str(), F_OK))
+		// {
+		// 	if (method == "POST")
+		// 		response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nbad request";
+		// 	else
+		// 		response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		// }
+		// else
+		// {
+		// 	if (method == "GET" || method == "DELETE")
+		// 		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+		// 	else
+		// 	{
+		// 		if (access(request_file.substr(0, request_file.rfind("/")).c_str(), F_OK))
+		// 			response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file.substr(0, request_file.rfind("/")) + std::string("\r\n\r\n");
+		// 		else
+		// 			response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+		// 	}
+		// }
 		return ;
 	}
-	else if (!server.getRedirpath().empty())
-	{
-		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getRedirpath());
-		request_file_path = std::string(".") + request_file;
-		std::cout << request_file_path << std::endl;
-		if (access(request_file.c_str(), F_OK))
-		{
-			if (method == "POST")
-				response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nbad request";
-			else
-				response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
-		}
-		else
-		{
-			if (method == "GET" || method == "DELETE")
-				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
-			else
-			{
-				if (access(request_file.substr(0, request_file.rfind("/")).c_str(), F_OK))
-					response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file.substr(0, request_file.rfind("/")) + std::string("\r\n\r\n");
-				else
-					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
-			}
-		}
-		return ;
-	}
+	// else if (!server.getRedirpath().empty())
+	// {
+	// 	request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getRedirpath());
+	// 	//request_file_path = std::string(".") + request_file;
+	// 	std::cout << request_file_path << std::endl;
+	// 	response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+	// 	/* if (access(request_file.c_str(), F_OK))
+	// 	{
+	// 		if (method == "POST")
+	// 			response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nbad request";
+	// 		else
+	// 			response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+	// 	}
+	// 	else
+	// 	{
+	// 		if (method == "GET" || method == "DELETE")
+	// 			response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+	// 		else
+	// 		{
+	// 			if (access(request_file.substr(0, request_file.rfind("/")).c_str(), F_OK))
+	// 				response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file.substr(0, request_file.rfind("/")) + std::string("\r\n\r\n");
+	// 			else
+	// 				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+	// 		}
+	// 	} */
+	// 	return ;
+	// }
 	else if (loc_index >= 0 && !server.getLocations()[loc_index].getRoot().empty())
 	{
 		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getLocations()[loc_index].getRoot());
@@ -358,7 +361,7 @@ void Request::formResponse()
 	}
 	else
 		request_file_path = std::string(".") + server.getRoot() + request_file;
-	//std::cout << request_file_path << std::endl;
+	// //std::cout << request_file_path << std::endl;
 	std::string meths[3] = {"GET", "POST", "DELETE"};
 	int i = 0;
 	for (; i < 3; i++)

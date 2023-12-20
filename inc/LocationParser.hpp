@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/20 07:11:05 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 11:08:37 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,8 +30,11 @@ class LocationParser
 			
 	public:
 		LocationParser();
+		LocationParser(const LocationParser &);
 		LocationParser(std::string);
 		~LocationParser();
+
+		LocationParser &operator=(const LocationParser &);
 		void		getInfo(void);
 		size_t		getMethodsSize() const;
 		void		setMethods(std::vector<std::string>);

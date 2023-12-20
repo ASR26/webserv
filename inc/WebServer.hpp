@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:13:01 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/16 09:28:53 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 12:12:55 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,9 +32,10 @@ class WebServer
 		void addRequest(int fd);
 		int existRequest(int fd);
 		void assignServerToRequest(class Request &req);
-
+		void configureServer();
 
 		void addTestServer();
+		bool isServerSocket(int);
 };
 
 #endif

@@ -44,7 +44,7 @@ class	Server
 		void getInfo(void);
 		int getServerSocket() const;
 		void openServerSocket();
-		std::string getPort() const;
+		std::vector<std::string> getPortVec() const;
 		std::vector<std::string> getServerNames() const;
 		std::vector<LocationParser> getLocations() const;
 		std::string getRoot() const;
@@ -52,6 +52,10 @@ class	Server
 		std::string getRedirpath() const;
 		bool getAutoIndex() const;
 		std::string getIndex() const;
+		void clearPort();
+		void setPort(std::string);
+		void setServerSocket(int);
+		std::string getPort() const;
 };
 
 #endif

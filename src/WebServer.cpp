@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/16 09:36:24 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/20 14:05:46 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,52 @@ void WebServer::addServer(std::string conf)
 		n = file.find("server", i);
 	}
 	fd.close();
+}
+
+void WebServer::configureServer()
+{
+	int server_vec_size = servers.size();
+	int nbr_port;
+	int n;
+	Server tmp;
+	std::string tmp_port;
+	int tmp_index;
+	std::map<std::string, int> port_sock;
+	std::map<std::string, int>::iterator it;
+	n = 0;
+	for (int i = 0; i < server_vec_size; i++)
+	{
+		nbr_port = servers[i + n].getPortVec().size();
+		if (nbr_port > 1)
+		{
+			tmp_port = servers[i + n].getPort();
+			tmp_index = i + n;
+			for (int j = 1; j < nbr_port; j++)
+			{
+				tmp = Server(servers[tmp_index]);
+				tmp.clearPort();
+				tmp.setPort(servers[tmp_index].getPortVec()[j]);
+				servers.insert(servers.begin() + tmp_index + j, tmp);
+				n++;
+			}
+			servers[tmp_index].clearPort();
+			servers[tmp_index].setPort(tmp_port);
+		}
+	}
+	for (int i = 0; i < (int)servers.size(); i++)
+	{
+		it = port_sock.find(servers[i].getPort());
+		if (it != port_sock.end())
+		{
+			servers[i].setServerSocket(it->second);
+		}
+		else
+		{
+			servers[i].openServerSocket();
+			port_sock[servers[i].getPort()] = servers[i].getServerSocket();
+		}
+	}
+	
 }
 
 void WebServer::assignServerToRequest(class Request &req)
@@ -152,6 +198,16 @@ void WebServer::assignServerToRequest(class Request &req)
 	
 }
 
+bool WebServer::isServerSocket(int fd)
+{
+	for (int i = 0; i < (int) servers.size(); i++)
+	{
+		if (fd == servers[i].getServerSocket())
+			return true;
+	}
+	return false;
+}
+
 void WebServer::runWebserv()
 {
 	//int c;
@@ -170,10 +226,13 @@ void WebServer::runWebserv()
 
 	/* Do this in for loop for all servers */
 	//std::cout << servers.size() << std::endl;
-	EV_SET(&new_event, servers[0].getServerSocket(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
-	k = kevent(kq, &new_event, 1, NULL, 0, NULL);
-	/*if (k == -1)
-		Error::functionError();*/
+	for (int i = 0; i < (int)servers.size(); i++)
+	{
+		EV_SET(&new_event, servers[i].getServerSocket(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
+		k = kevent(kq, &new_event, 1, NULL, 0, NULL);
+		/*if (k == -1)
+			Error::functionError();*/
+	}
 	acceptedaddrinfo_size = sizeof(struct sockaddr_storage);
 	while (1)
 	{
@@ -187,12 +246,12 @@ void WebServer::runWebserv()
 			//std::cout << std::endl << "closing connection" << std::endl;
 			close(finished_event.ident);
 		}
-		else if (finished_event.ident == (unsigned long)servers[0].getServerSocket())
+		else if (isServerSocket(finished_event.ident))
 		{
 			//std::cout << std::endl << "accept connection" << std::endl;
-			if ((serverSocket_acc = accept(servers[0].getServerSocket(), (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
+			if ((serverSocket_acc = accept(finished_event.ident, (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
 				Error::functionError();
-			fcntl(serverSocket_acc, F_SETFD , O_NONBLOCK);
+			fcntl(serverSocket_acc, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
 			EV_SET(&new_event, serverSocket_acc, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
 			kevent(kq, &new_event, 1, NULL, 0, NULL);
 		}
