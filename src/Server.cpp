@@ -113,8 +113,11 @@ Server::Server(std::string conf)
 				n++;
 			while (std::atoi(&conf[n]))
 			{
+				std::string s;
 				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j, i - j));
-				n += 1 + std::to_string(std::atoi(&conf[n])).length();//to_str es c++ 11!!!!!!!!!!!!!!!!!!!
+				//n += 1 + std::to_string(std::atoi(&conf[n])).length();//to_str es c++ 11!!!!!!!!!!!!!!!!!!!
+				s = intToStr(std::atoi(&conf[n]));
+				n += 1 + s.size();// esto NO es c++11, devuelve lo mismo que la línea comentada (debería estar bien)
 			}
 			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
 			n = conf.find("error_page", n);
@@ -179,8 +182,8 @@ Server::Server(std::string conf)
 		n = conf.find("DELETE");
 		if (n != std::string::npos)
 		{
-			methods.push_back(trimSpaces(conf.substr(n, 5)));
-			conf.erase(n, 5);
+			methods.push_back(trimSpaces(conf.substr(n, 6)));
+			conf.erase(n, 6);
 		}
 		std::vector<LocationParser>::iterator	it = location.begin();
 		while (it != location.end())

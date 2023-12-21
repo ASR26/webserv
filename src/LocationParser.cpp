@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationParser.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/20 18:26:47 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/21 11:27:19 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,8 @@ LocationParser::LocationParser(std::string conf)
 		n = conf.find("DELETE");
 		if (n != std::string::npos)
 		{	
-			methods.push_back(trimSpaces(conf.substr(n, 5)));
-			conf.erase(n, 5);
+			methods.push_back(trimSpaces(conf.substr(n, 6)));
+			conf.erase(n, 6);
 		}
 	}
 
@@ -181,7 +181,6 @@ LocationParser::LocationParser(std::string conf)
 			n = conf.find("error_page", n);
 		}
 	}
-
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t')
@@ -290,4 +289,9 @@ bool LocationParser::getAutoIndex() const
 std::string LocationParser::getIndex() const
 {
 	return this->index;
+}
+
+std::vector<std::string> LocationParser::getMethods() const
+{
+	return this->location;
 }

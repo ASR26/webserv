@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/20 14:02:30 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/21 10:08:11 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,5 +70,7 @@ size_t nbrEqualChar(std::string str1, std::string str2);
 size_t nbrEqualStr(std::vector<std::string> vecstr1, std::vector<std::string> vecstr2);
 std::vector<std::string> split(std::string str, std::string c);
 std::string trimSpaces(std::string str);
+int	intLen(const int n);
+std::string intToStr(const int n);
 
 #endif

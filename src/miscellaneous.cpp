@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   miscellaneous.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 08:30:43 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/20 14:02:34 by ysmeding         ###   ########.fr       */
+/*   Updated: 2023/12/21 08:59:31 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,4 +63,18 @@ std::string trimSpaces(std::string str)
 	while (str.back() == ' ')
 		str.pop_back();
 	return str;
+}
+
+std::string intToStr(const int n)
+{
+	std::stringstream ss;
+	ss << n;
+	return ss.str();
+}
+
+int	intLen(const int n)
+{
+	std::stringstream ss;
+	ss << n;
+	return ss.str().size();
 }
