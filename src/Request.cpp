@@ -6,7 +6,7 @@
 /*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/22 09:10:52 by asolano-         ###   ########.fr       */
+/*   Updated: 2023/12/22 11:35:36 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,7 +287,15 @@ void Request::executePostRequest()
 void Request::executeDeleteRequest()
 {
 	//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 17\r\n\r\nhello from delete";
-	std::cout << body << std::endl;
+	if (access(request_file_path.c_str(), F_OK))
+	{
+		std::string resp = fileToStr("def/404");
+		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		return ;
+	}
+	std::remove(request_file_path.c_str());
+	std::string resp = fileToStr("def/delete");
+	response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + intToStr(resp.size()) + "\r\n\r\n" + resp;
 }
 
 void Request::formResponse()
@@ -303,7 +311,9 @@ void Request::formResponse()
 	selectLocation();
 	if (!isAllowedMethod())
 	{
-		response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length:19\r\n\r\nMethod not allowed\n";
+		std::string resp = fileToStr("def/405");
+		method = "GET";
+		response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 	 	return ;
 	}
 	if (loc_index >= 0 && !server.getLocations()[loc_index].getRedirpath().empty())
@@ -387,8 +397,6 @@ void Request::formResponse()
 			executeDeleteRequest();
 			break;
 	}
-	return ;
-	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 5\r\n\r\nhello";
 	return ;
 }
 
