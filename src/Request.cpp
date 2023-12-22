@@ -6,7 +6,7 @@
 /*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/21 11:14:46 by asolano-         ###   ########.fr       */
+/*   Updated: 2023/12/22 09:10:52 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,7 +172,8 @@ void Request::executeGetRequest()
 	}
 	if (access(request_file_path.c_str(), F_OK))
 	{
-		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+		std::string resp = fileToStr("def/404");
+		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 		return ;
 	}
 	struct stat buf;
@@ -184,7 +185,8 @@ void Request::executeGetRequest()
 		std::string str, content;
 		if (file.bad() || file.fail())
 		{
-			response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nforbidden";
+			std::string resp = fileToStr("def/403");
+			response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 			return ;
 		}
 		while (!file.eof())
@@ -215,14 +217,16 @@ void Request::executeGetRequest()
 				request_file_path = std::string(".") + server.getLocations()[loc_index].getRoot() + std::string("/") + server.getLocations()[loc_index].getIndex();
 				if (access(request_file_path.c_str(), F_OK))
 				{
-					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+					std::string resp = fileToStr("def/404");
+					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 					return ;
 				}
 				std::ifstream file(request_file_path);
 				std::string str, content;
 				if (file.bad() || file.fail())
 				{
-					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nforbidden";
+					std::string resp = fileToStr("def/403");
+					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 					return ;
 				}
 				while (!file.eof())
@@ -244,14 +248,16 @@ void Request::executeGetRequest()
 				request_file_path = std::string(".") + server.getRoot() + std::string("/") + server.getIndex();
 				if (access(request_file_path.c_str(), F_OK))
 				{
-					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
+					std::string resp = fileToStr("def/404");
+					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 					return ;
 				}
 				std::ifstream file(request_file_path);
 				std::string str, content;
 				if (file.bad() || file.fail())
 				{
-					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nforbidden";
+					std::string resp = fileToStr("def/403");
+					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 					return ;
 				}
 				while (!file.eof())

@@ -6,7 +6,7 @@
 /*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/21 11:27:19 by asolano-         ###   ########.fr       */
+/*   Updated: 2023/12/22 08:28:42 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -293,5 +293,5 @@ std::string LocationParser::getIndex() const
 
 std::vector<std::string> LocationParser::getMethods() const
 {
-	return this->location;
+	return this->methods;
 }

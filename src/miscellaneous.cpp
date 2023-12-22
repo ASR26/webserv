@@ -6,7 +6,7 @@
 /*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 08:30:43 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/21 08:59:31 by asolano-         ###   ########.fr       */
+/*   Updated: 2023/12/22 08:48:52 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,4 +77,12 @@ int	intLen(const int n)
 	std::stringstream ss;
 	ss << n;
 	return ss.str().size();
+}
+
+std::string fileToStr(std::string file)
+{
+	std::ifstream s(file);
+	std::stringstream buffer;
+	buffer << s.rdbuf();
+	return buffer.str();
 }
