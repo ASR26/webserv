@@ -6,7 +6,7 @@
 /*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/21 10:08:11 by asolano-         ###   ########.fr       */
+/*   Updated: 2023/12/22 08:46:47 by asolano-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,5 +72,5 @@ std::vector<std::string> split(std::string str, std::string c);
 std::string trimSpaces(std::string str);
 int	intLen(const int n);
 std::string intToStr(const int n);
-
+std::string fileToStr(std::string file);
 #endif
