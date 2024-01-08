@@ -195,6 +195,8 @@ Server::Server(std::string conf)
 		root = conf.substr(i, n - i);
 		if (root[root.length() - 1] == '/')
 			throw std::exception();
+		else if (root[0] != '/')
+			throw std::exception();
 		conf.erase(conf.find("root"), conf.find("\n", conf.find("root")) - conf.find("root"));
 	}
 

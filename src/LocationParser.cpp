@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/19 15:42:54 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/08 11:40:35 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,10 @@ LocationParser::LocationParser(std::string conf)
 		i = n + 5;
 		n = conf.find("\n", n + 1);
 		root = conf.substr(i, n - i);
+		if (root[root.length() - 1] == '/')
+			throw std::exception();
+		else if (root[0] != '/')
+			throw std::exception();
 		conf.erase(i - 5, n - i + 5);
 	}
 
