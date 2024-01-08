@@ -1,4 +1,4 @@
-/* ************************************************************************** */
+	/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/07 11:11:11 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/18 13:56:09 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/04 14:37:10 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@
 #include <signal.h>
 /* kqueue kevent */
 #include <sys/event.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 
 
@@ -50,6 +52,8 @@
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
 #include <utility>
 
 
@@ -62,4 +66,12 @@
 #include "Request.hpp"
 #include "Response.hpp"
 
+
+size_t nbrEqualChar(std::string str1, std::string str2);
+size_t nbrEqualStr(std::vector<std::string> vecstr1, std::vector<std::string> vecstr2);
+std::vector<std::string> split(std::string str, std::string c);
+std::string trimSpaces(std::string str);
+int	intLen(const int n);
+std::string intToStr(const int n);
+std::string fileToStr(std::string file);
 #endif

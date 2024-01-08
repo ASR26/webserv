@@ -32,17 +32,30 @@ class	Server
 		std::string							upload;
 		std::pair<std::string, std::string>	redirec;
 		std::map<std::string, std::string>	cgi;
-		std::map<int, class Request> requestQueue;
 		int serverSocket;
 
 	public:
 		Server();
 		Server(std::string);
+		Server(const Server&);
 		~Server();
+
+		Server &operator=(const Server&);
 		void getInfo(void);
 		int getServerSocket() const;
-		void addRequest(int fd);
-		void formResponse();
+		void openServerSocket();
+		std::vector<std::string> getPortVec() const;
+		std::vector<std::string> getServerNames() const;
+		std::vector<LocationParser> getLocations() const;
+		std::string getRoot() const;
+		bool isAllowedMethod(std::string);
+		std::string getRedirpath() const;
+		bool getAutoIndex() const;
+		std::string getIndex() const;
+		void clearPort();
+		void setPort(std::string);
+		void setServerSocket(int);
+		std::string getPort() const;
 };
 
 #endif

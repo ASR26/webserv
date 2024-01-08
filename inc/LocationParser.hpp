@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2023/12/19 15:34:55 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/08 12:22:34 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,15 +27,26 @@ class LocationParser
 		std::pair<std::string, std::string>	redirec;
 		std::string							cgi_pass;
 		std::map<int, std::string>			error;
-		
+			
 	public:
 		LocationParser();
+		LocationParser(const LocationParser &);
 		LocationParser(std::string);
 		~LocationParser();
+
+		LocationParser &operator=(const LocationParser &);
 		void		getInfo(void);
 		size_t		getMethodsSize() const;
 		void		setMethods(std::vector<std::string>);
+		std::string getLocation() const;
 		std::string	getCGI() const;
+		bool 		isAllowedMethod(std::string meth);
+		std::string getRoot() const;
+		std::string getRedirpath() const;
+		std::string getRedircode() const;
+		bool		getAutoIndex() const;
+		std::string getIndex() const;
+		std::vector<std::string> getMethods() const;
 };
 
 #endif

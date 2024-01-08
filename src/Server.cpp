@@ -14,7 +14,13 @@
 
 Server::Server()
 {
-
+	//remove all this later
+	port.push_back("8080");
+	methods.push_back("GET");
+	methods.push_back("POST");
+	methods.push_back("DELETE");
+	auto_index = false;
+	location.push_back(LocationParser());
 }
 
 Server::Server(std::string conf)
@@ -28,7 +34,7 @@ Server::Server(std::string conf)
 	conf.erase(0, 6);
 	n = conf.find("location");
 	if (n == std::string::npos)
-		throw std::exception();
+		throw std::runtime_error("Error: 1");//porque exception cuando no hay location?
 	else
 	{
 		while (n != std::string::npos)
@@ -44,7 +50,11 @@ Server::Server(std::string conf)
 					j--;  
 			location.push_back(LocationParser(conf.substr(n, i - n)));
 			if (conf.find("*.", n) < (unsigned long)i && conf.find("cgi_pass", n) < (unsigned long)i)
-				cgi[conf.substr(conf.find("*.", n) + 2, conf.find(" ", n + 9))] = location.back().getCGI();
+			{
+				std::string cgi_file_type = trimSpaces(conf.substr(conf.find("*.", n) + 2, conf.find("{", conf.find("*.", n) + 2) - (conf.find("*.", n) + 2)));
+				//std::cout << "CGI name:" << trimSpaces(conf.substr(conf.find("*.", n) + 2, conf.find("{", conf.find("*.", n) + 2) - (conf.find("*.", n) + 2))) << "<-" << std::endl;
+				cgi[cgi_file_type] = location.back().getCGI();
+			}
 			conf.erase(n, i - n);
 			n = conf.find("location");
 		}
@@ -63,7 +73,7 @@ Server::Server(std::string conf)
 		{
 			if (conf[i] == ' ' || conf[i] == '\n')
 			{
-				port.push_back(conf.substr(n, i - n));
+				port.push_back(trimSpaces(conf.substr(n, i - n)));
 				n = i + 1;
 			}
 			i++;
@@ -82,7 +92,7 @@ Server::Server(std::string conf)
 		{
 			if (conf[i] == ' ' || conf[i] == '\n')
 			{
-				s_name.push_back(conf.substr(n, i - n));
+				s_name.push_back(trimSpaces(conf.substr(n, i - n)));
 				n = i + 1;
 			}
 			i++;
@@ -92,7 +102,7 @@ Server::Server(std::string conf)
 
 	n = conf.find("error_page");
 	if (n == std::string::npos)
-		error[404] = "default_location";
+		error[404] = "default_location";//no hace falta
 	else
 	{
 		while (n != std::string::npos)
@@ -107,8 +117,11 @@ Server::Server(std::string conf)
 				n++;
 			while (std::atoi(&conf[n]))
 			{
-				error[std::atoi(&conf[n])] = conf.substr(j, i - j);
-				n += 1 + std::to_string(std::atoi(&conf[n])).length();
+				std::string s;
+				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j, i - j));
+				//n += 1 + std::to_string(std::atoi(&conf[n])).length();//to_str es c++ 11!!!!!!!!!!!!!!!!!!!
+				s = intToStr(std::atoi(&conf[n]));
+				n += 1 + s.size();// esto NO es c++11, devuelve lo mismo que la línea comentada (debería estar bien)
 			}
 			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
 			n = conf.find("error_page", n);
@@ -148,7 +161,7 @@ Server::Server(std::string conf)
 		index = "index.html";
 	else
 	{
-		index = conf.substr(n + 6, conf.find("\n", n + 1) - (n + 6));
+		index = trimSpaces(conf.substr(n + 6, conf.find("\n", n + 1) - (n + 6)));
 		conf.erase(n, conf.find("\n", n + 1) - n);
 	}
 
@@ -161,20 +174,20 @@ Server::Server(std::string conf)
 		n = conf.find("GET");
 		if (n != std::string::npos)
 		{
-			methods.push_back(conf.substr(n, 3));
+			methods.push_back(trimSpaces(conf.substr(n, 3)));
 			conf.erase(n, 3);
 		}
 		n = conf.find("POST");
 		if (n != std::string::npos)
 		{
-			methods.push_back(conf.substr(n, 4));
+			methods.push_back(trimSpaces(conf.substr(n, 4)));
 			conf.erase(n, 4);
 		}
 		n = conf.find("DELETE");
 		if (n != std::string::npos)
 		{
-			methods.push_back(conf.substr(n, 5));
-			conf.erase(n, 5);
+			methods.push_back(trimSpaces(conf.substr(n, 6)));
+			conf.erase(n, 6);
 		}
 		std::vector<LocationParser>::iterator	it = location.begin();
 		while (it != location.end())
@@ -192,9 +205,9 @@ Server::Server(std::string conf)
 	{
 		i = n + 5;
 		n = conf.find("\n", n + 1);
-		root = conf.substr(i, n - i);
+		root = trimSpaces(conf.substr(i, n - i));
 		if (root[root.length() - 1] == '/')
-			throw std::exception();
+			throw std::runtime_error("Error: 2");
 		else if (root[0] != '/')
 			throw std::exception();
 		conf.erase(conf.find("root"), conf.find("\n", conf.find("root")) - conf.find("root"));
@@ -205,7 +218,7 @@ Server::Server(std::string conf)
 		upload = "";
 	else
 	{
-		upload = conf.substr(n + 7, conf.find("\n", n + 1) - n - 7);
+		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n + 1) - n - 7));
 		conf.erase(conf.find("upload"), conf.find("\n", conf.find("upload")) - conf.find("upload"));
 	}
 
@@ -217,16 +230,16 @@ Server::Server(std::string conf)
 	}
 	else
 	{
-		redirec.first = conf.substr(n + 7, conf.find(" ", n + 7) - n - 7);
+		redirec.first = trimSpaces(conf.substr(n + 7, conf.find(" ", n + 7) - n - 7));
 		n = conf.find(" ", n + 8);
-		redirec.second = conf.substr(n + 1, conf.find("\n", n + 1) - n - 1);
+		redirec.second = trimSpaces(conf.substr(n + 1, conf.find("\n", n + 1) - n - 1));
 		conf.erase(conf.find("return"), conf.find("\n", conf.find("return")) - conf.find("return"));
 	}
 
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
-			throw std::exception();
+			throw std::runtime_error("Error: 3");
 	
 	getInfo();
 
@@ -272,9 +285,47 @@ Server::Server(std::string conf)
 	return ;*/
 }
 
+Server::Server(const Server& ser)
+{
+	this->location = ser.location;
+	this->port = ser.port;
+	this->s_name = ser.s_name;
+	this->error = ser.error;
+	this->c_size = ser.c_size;
+	this->auto_index = ser.auto_index;
+	this->index = ser.index;
+	this->methods = ser.methods;
+	this->root = ser.root;
+	this->upload = ser.upload;
+	this->redirec = ser.redirec;
+	this->cgi = ser.cgi;
+	this->serverSocket = ser.serverSocket;
+}
+
 Server::~Server()
 {
 
+}
+
+Server &Server::operator=(const Server & ser)
+{
+	if (this != &ser)
+	{
+		this->location = ser.location;
+		this->port = ser.port;
+		this->s_name = ser.s_name;
+		this->error = ser.error;
+		this->c_size = ser.c_size;
+		this->auto_index = ser.auto_index;
+		this->index = ser.index;
+		this->methods = ser.methods;
+		this->root = ser.root;
+		this->upload = ser.upload;
+		this->redirec = ser.redirec;
+		this->cgi = ser.cgi;
+		this->serverSocket = ser.serverSocket;
+	}
+	return *this;
 }
 
 void	Server::getInfo()
@@ -314,16 +365,114 @@ void	Server::getInfo()
 	std::cout << "Root : " << root << std::endl;
 	std::cout << "Upload : " << upload << std::endl;
 	std::cout << "Redirec : " << redirec.first << " " << redirec.second << std::endl;
+	std::map<std::string, std::string>::iterator cgi_it = cgi.begin();
+	std::cout << "CGI : " << std::endl;
+	while (cgi_it != cgi.end())
+	{
+		std::cout << cgi_it->first << " -> " << cgi_it->second << std::endl;
+		cgi_it++;
+	}
 	std::cout << std::endl;
 }
+
+
 int Server::getServerSocket() const
 {
 	return this->serverSocket;
 }
 
-void Server::addRequest(int fd)
+void Server::openServerSocket()
 {
-	requestQueue.insert(std::pair<int, class Request>(fd, Request(fd)));
+	struct addrinfo default_addrinfo;
+	struct addrinfo *returned_sockaddr;
+
+	memset(&default_addrinfo, 0, sizeof(struct addrinfo));
+	default_addrinfo.ai_family = AF_INET;
+	default_addrinfo.ai_socktype = SOCK_STREAM;
+	default_addrinfo.ai_flags = AI_PASSIVE;
+	//this->port_str = "8080";//remove this later
+	if (getaddrinfo(NULL, port[0].c_str(), &default_addrinfo, &returned_sockaddr) != 0)
+	{
+		throw std::runtime_error("Error: getaddrinfo");
+	}
+	
+	if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+	{
+		throw std::runtime_error("Error: socket");
+	}
+	//setsockopt
+	
+	if (bind(serverSocket, returned_sockaddr->ai_addr, returned_sockaddr->ai_addrlen) == -1)
+	{
+		throw std::runtime_error(strerror(errno));
+	}
+	if (listen(serverSocket, 1000) == -1)
+	{
+		throw std::runtime_error("Error: listen");
+	}
+	//freeaddrinfo(returned_sockaddr);
+	//std::cout << "So far so good..." << std::endl;
 	return ;
 }
 
+std::vector<std::string> Server::getPortVec() const
+{
+	return this->port;
+}
+
+std::vector<std::string> Server::getServerNames() const
+{
+	return this->s_name;
+}
+
+std::vector<LocationParser> Server::getLocations() const
+{
+	return this->location;
+}
+
+std::string Server::getRoot() const
+{
+	return this->root;
+}
+
+bool Server::isAllowedMethod(std::string meth)
+{
+	if (std::find(methods.begin(), methods.end(), meth) == methods.end())
+		return false;
+	return true;
+}
+
+std::string Server::getRedirpath() const
+{
+	return this->redirec.second;
+}
+
+bool Server::getAutoIndex() const
+{
+	return this->auto_index;
+}
+
+std::string Server::getIndex() const
+{
+	return this->index;
+}
+
+void Server::clearPort()
+{
+	port.clear();
+}
+
+void Server::setPort(std::string p)
+{
+	port.push_back(p);
+}
+
+std::string Server::getPort() const
+{
+	return this->port[0];
+}
+
+void Server::setServerSocket(int fd)
+{
+	this->serverSocket = fd;
+}

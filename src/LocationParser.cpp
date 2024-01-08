@@ -6,7 +6,7 @@
 /*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/08 11:40:35 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/08 12:21:07 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,27 @@
 
 LocationParser::LocationParser()
 {
+	//remove all this later
+	location = "/dir1";
+	root = "/abc/123/xyz/bye";
+	redirec.second = "https://en.wikipedia.org/wiki";
+	methods.push_back("GET");
+	methods.push_back("POST");
+	methods.push_back("DELETE");
+}
 
+LocationParser::LocationParser(const LocationParser& loc)
+{
+	this->location = loc.location;
+	this->methods = loc.methods;
+	this->root = loc.root;
+	this->c_size = loc.c_size;
+	this->auto_index = loc.auto_index;
+	this->upload = loc.upload;
+	this->index = loc.index;
+	this->redirec = loc.redirec;
+	this->cgi_pass = loc.cgi_pass;
+	this->error = loc.error;
 }
 
 LocationParser::LocationParser(std::string conf)
@@ -26,7 +46,7 @@ LocationParser::LocationParser(std::string conf)
 	i = 0;
 	while (conf[i] != '{')
 		i++;
-	location = conf.substr(9, i - 9);
+	location = trimSpaces(conf.substr(9, i - 9));
 	conf.erase(0, ++i);
 
 	n = conf.find("allow_methods");
@@ -36,20 +56,20 @@ LocationParser::LocationParser(std::string conf)
 		n = conf.find("GET");
 		if (n != std::string::npos)
 		{	
-			methods.push_back(conf.substr(n, 3));
+			methods.push_back(trimSpaces(conf.substr(n, 3)));
 			conf.erase(n, 3);
 		}
 		n = conf.find("POST");
 		if (n != std::string::npos)
 		{
-			methods.push_back(conf.substr(n, 4));
+			methods.push_back(trimSpaces(conf.substr(n, 4)));
 			conf.erase(n, 4);
 		}
 		n = conf.find("DELETE");
 		if (n != std::string::npos)
 		{	
-			methods.push_back(conf.substr(n, 5));
-			conf.erase(n, 5);
+			methods.push_back(trimSpaces(conf.substr(n, 6)));
+			conf.erase(n, 6);
 		}
 	}
 
@@ -60,7 +80,7 @@ LocationParser::LocationParser(std::string conf)
 	{
 		i = n + 5;
 		n = conf.find("\n", n + 1);
-		root = conf.substr(i, n - i);
+		root = trimSpaces(conf.substr(i, n - i));
 		if (root[root.length() - 1] == '/')
 			throw std::exception();
 		else if (root[0] != '/')
@@ -107,7 +127,7 @@ LocationParser::LocationParser(std::string conf)
 		index = "index.html";
 	else
 	{
-		index = conf.substr(n + 6, conf.find("\n", n + 1) - (n + 6));
+		index = trimSpaces(conf.substr(n + 6, conf.find("\n", n + 1) - (n + 6)));
 		conf.erase(n, conf.find("\n", n) - n);
 	}
 	n = conf.find("upload");
@@ -115,7 +135,7 @@ LocationParser::LocationParser(std::string conf)
 		upload = "";
 	else
 	{
-		upload = conf.substr(n + 7, conf.find("\n", n) - (n + 7));
+		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n) - (n + 7)));
 		conf.erase(n, conf.find("\n", n) - n);
 	}
 
@@ -128,9 +148,9 @@ LocationParser::LocationParser(std::string conf)
 	else
 	{
 		i = n;
-		redirec.first = conf.substr(n + 7, conf.find(" ", n + 7) - n - 7);
+		redirec.first = trimSpaces(conf.substr(n + 7, conf.find(" ", n + 7) - n - 7));
 		n = conf.find(" ", n + 8);
-		redirec.second = conf.substr(n + 1, conf.find("\n", n + 1) - n - 1);
+		redirec.second = trimSpaces(conf.substr(n + 1, conf.find("\n", n + 1) - n - 1));
 		conf.erase(i, conf.find("\n", n) - i);
 	}
 	
@@ -139,7 +159,7 @@ LocationParser::LocationParser(std::string conf)
 		cgi_pass = "";
 	else
 	{
-		cgi_pass = conf.substr(n + 9, conf.find("\n", n + 1) - n - 9);
+		cgi_pass = trimSpaces(conf.substr(n + 9, conf.find("\n", n + 1) - n - 9));
 		conf.erase(n, conf.find("\n", n) - n);
 	}
 
@@ -158,24 +178,42 @@ LocationParser::LocationParser(std::string conf)
 				n++;
 			while (std::atoi(&conf[n]))
 			{
-				error[std::atoi(&conf[n])] = conf.substr(j, i - j);
+				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j, i - j));
 				n += 1 + std::to_string(std::atoi(&conf[n])).length();
 			}
 			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
 			n = conf.find("error_page", n);
 		}
 	}
-
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t')
-			throw std::exception();
-	getInfo();
+			throw std::runtime_error("Error: 4");
+	//getInfo();
 }
 
 LocationParser::~LocationParser()
 {
 
+}
+
+
+LocationParser &LocationParser::operator=(const LocationParser& loc)
+{
+	if (this != &loc)
+	{
+		this->location = loc.location;
+		this->methods = loc.methods;
+		this->root = loc.root;
+		this->c_size = loc.c_size;
+		this->auto_index = loc.auto_index;
+		this->upload = loc.upload;
+		this->index = loc.index;
+		this->redirec = loc.redirec;
+		this->cgi_pass = loc.cgi_pass;
+		this->error = loc.error;
+	}
+	return (*this);
 }
 
 void	LocationParser::getInfo(void)
@@ -218,4 +256,46 @@ void	LocationParser::setMethods(std::vector<std::string> cpy)
 std::string	LocationParser::getCGI() const
 {
 	return (cgi_pass);
+}
+
+std::string LocationParser::getLocation() const
+{
+	return this->location;
+}
+
+bool LocationParser::isAllowedMethod(std::string meth)
+{
+	if (std::find(methods.begin(), methods.end(), meth) == methods.end())
+		return false;
+	return true;
+}
+
+std::string LocationParser::getRoot() const
+{
+	return this->root;
+}
+
+std::string LocationParser::getRedirpath() const
+{
+	return this->redirec.second;
+}
+
+std::string LocationParser::getRedircode() const
+{
+	return this->redirec.first;
+}
+
+bool LocationParser::getAutoIndex() const
+{
+	return this->auto_index;
+}
+
+std::string LocationParser::getIndex() const
+{
+	return this->index;
+}
+
+std::vector<std::string> LocationParser::getMethods() const
+{
+	return this->methods;
 }

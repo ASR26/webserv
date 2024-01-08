@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 14:26:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 09:57:59 by gromero-         ###   ########.fr       */
+/*   Updated: 2023/12/13 07:57:16 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/webserv.hpp"
+/* #include "../inc/webserv.hpp"
 
 Response::Response()
 {
@@ -35,4 +35,4 @@ Response &Response::operator=(const Response& res)
 		this->body = res.body;
 	}
 	return (*this);
-}
+} */
