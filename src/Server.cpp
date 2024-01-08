@@ -50,7 +50,11 @@ Server::Server(std::string conf)
 					j--;  
 			location.push_back(LocationParser(conf.substr(n, i - n)));
 			if (conf.find("*.", n) < (unsigned long)i && conf.find("cgi_pass", n) < (unsigned long)i)
-				cgi[conf.substr(conf.find("*.", n) + 2, conf.find(" ", n + 9))] = location.back().getCGI();
+			{
+				std::string cgi_file_type = trimSpaces(conf.substr(conf.find("*.", n) + 2, conf.find("{", conf.find("*.", n) + 2) - (conf.find("*.", n) + 2)));
+				//std::cout << "CGI name:" << trimSpaces(conf.substr(conf.find("*.", n) + 2, conf.find("{", conf.find("*.", n) + 2) - (conf.find("*.", n) + 2))) << "<-" << std::endl;
+				cgi[cgi_file_type] = location.back().getCGI();
+			}
 			conf.erase(n, i - n);
 			n = conf.find("location");
 		}
@@ -235,7 +239,7 @@ Server::Server(std::string conf)
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
 			throw std::runtime_error("Error: 3");
 	
-	//getInfo();
+	getInfo();
 
 	/*memset(&default_addrinfo, 0, sizeof(struct addrinfo));
 	default_addrinfo.ai_family = AF_INET;
@@ -359,6 +363,13 @@ void	Server::getInfo()
 	std::cout << "Root : " << root << std::endl;
 	std::cout << "Upload : " << upload << std::endl;
 	std::cout << "Redirec : " << redirec.first << " " << redirec.second << std::endl;
+	std::map<std::string, std::string>::iterator cgi_it = cgi.begin();
+	std::cout << "CGI : " << std::endl;
+	while (cgi_it != cgi.end())
+	{
+		std::cout << cgi_it->first << " -> " << cgi_it->second << std::endl;
+		cgi_it++;
+	}
 	std::cout << std::endl;
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Request.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/22 11:35:36 by asolano-         ###   ########.fr       */
+/*   Updated: 2024/01/08 11:46:24 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,8 +207,35 @@ void Request::executeGetRequest()
 	{
 		if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || server.getAutoIndex())
 		{
-			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 51\r\n\r\nwhy are you asking for a directory? You get a list.";
+			//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 51\r\n\r\nwhy are you asking for a directory? You get a list.";
 			//list directory here
+			std::string list_file = "<html><body>";
+			DIR *dir_fd = opendir(request_file_path.c_str());
+			if (!dir_fd)
+			{
+				std::string resp = fileToStr("def/403");
+				response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				return ;
+			}
+			struct dirent *dir_entry;
+			dir_entry = readdir(dir_fd);
+			std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+			list_file += "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>";
+			dir_entry = readdir(dir_fd);
+			std::cout << "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+			list_file += "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>";
+			while ((dir_entry = readdir(dir_fd)) != NULL)
+			{
+				//std::cout << dir_entry->d_name << std::endl;
+				//std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + ">" + std::string(dir_entry->d_name) + "</a>" << std::endl;ç
+				if (request_file_path.back() != '/')
+					request_file_path += "/";
+				list_file += "<a href=" + std::string("\"") + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>";
+			}
+			closedir(dir_fd);
+			list_file += "</body></html>";
+			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(list_file.size()) + "\r\n\r\n" + list_file;
+			return ;
 		}
 		else
 		{
@@ -282,6 +309,12 @@ void Request::executeGetRequest()
 void Request::executePostRequest()
 {
 	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nhello from post";
+	struct stat buf;
+	stat(request_file_path.c_str(), &buf);
+	/* if (S_ISDIR(buf.st_mode))
+	{
+
+	} */
 }
 
 void Request::executeDeleteRequest()
@@ -293,7 +326,12 @@ void Request::executeDeleteRequest()
 		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
 		return ;
 	}
-	std::remove(request_file_path.c_str());
+	if (std::remove(request_file_path.c_str()))
+	{
+		std::string resp = fileToStr("def/403");
+		response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		return ;
+	}
 	std::string resp = fileToStr("def/delete");
 	response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + intToStr(resp.size()) + "\r\n\r\n" + resp;
 }
