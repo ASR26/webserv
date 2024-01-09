@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationParser.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/08 12:22:34 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/09 11:55:09 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,9 @@ class LocationParser
 		std::string getRedircode() const;
 		bool		getAutoIndex() const;
 		std::string getIndex() const;
+		std::string getUpload() const;
 		std::vector<std::string> getMethods() const;
+		int getCSize() const;
 };
 
 #endif

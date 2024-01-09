@@ -56,6 +56,8 @@ class	Server
 		void setPort(std::string);
 		void setServerSocket(int);
 		std::string getPort() const;
+		std::string getUpload() const;
+		int getCSize() const;
 };
 
 #endif

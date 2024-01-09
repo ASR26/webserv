@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/20 14:05:46 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/09 14:39:36 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,6 +76,71 @@ void WebServer::addServer(std::string conf)
 		n = file.find("server", i);
 	}
 	fd.close();
+}
+
+void WebServer::checkServerSpecification()
+{
+	std::string full_root;
+	std::string full_upload;
+	struct stat buf;
+	for (unsigned int i = 0; i < servers.size(); i++)
+	{
+		if (!servers[i].getRoot().empty())
+		{
+			full_root = "." + servers[i].getRoot();
+			if (access(full_root.c_str(), F_OK))
+			{
+				throw std::runtime_error("Error: non existent root " + full_root);
+			}
+			stat(full_root.c_str(), &buf);
+			if (!S_ISDIR(buf.st_mode))
+			{
+				throw std::runtime_error("Error: root not a directory");
+			}
+		}
+		if (!servers[i].getUpload().empty())
+		{
+			full_upload = "." + servers[i].getRoot() + servers[i].getUpload();
+			if (access(full_upload.c_str(), F_OK))
+			{
+				throw std::runtime_error("Error: non existent upload " + full_upload);
+			}
+			stat(full_upload.c_str(), &buf);
+			if (!S_ISDIR(buf.st_mode))
+			{
+				throw std::runtime_error("Error: upload not a directory");
+			}
+		}
+		for (unsigned int j = 0; j < servers[i].getLocations().size(); j++)
+		{
+			if (!servers[i].getLocations()[j].getRoot().empty())
+			{
+				full_root = "." + servers[i].getLocations()[j].getRoot();
+				if (access(full_root.c_str(), F_OK))
+				{
+					throw std::runtime_error("Error: non existent root " + full_root);
+				}
+				stat(full_root.c_str(), &buf);
+				if (!S_ISDIR(buf.st_mode))
+				{
+					throw std::runtime_error("Error: root not a directory");
+				}
+			}
+			if (!servers[i].getLocations()[j].getUpload().empty())
+			{
+				full_upload = "." + servers[i].getLocations()[j].getRoot() + servers[i].getLocations()[j].getUpload();
+				if (access(full_upload.c_str(), F_OK))
+				{
+					throw std::runtime_error("Error: non existent upload " + full_upload);
+				}
+				stat(full_upload.c_str(), &buf);
+				if (!S_ISDIR(buf.st_mode))
+				{
+					throw std::runtime_error("Error: upload not a directory");
+				}
+			}
+		}
+	}
 }
 
 void WebServer::configureServer()

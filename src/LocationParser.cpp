@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationParser.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/08 12:21:07 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/09 11:55:58 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -298,4 +298,14 @@ std::string LocationParser::getIndex() const
 std::vector<std::string> LocationParser::getMethods() const
 {
 	return this->methods;
+}
+
+std::string LocationParser::getUpload() const
+{
+	return this->upload;
+}
+
+int LocationParser::getCSize() const
+{
+	return this->c_size;
 }

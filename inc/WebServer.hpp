@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:13:01 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/20 12:12:55 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/09 14:09:03 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ class WebServer
 
 		void addTestServer();
 		bool isServerSocket(int);
+		void checkServerSpecification();
 };
 
 #endif

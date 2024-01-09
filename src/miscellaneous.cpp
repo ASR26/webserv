@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   miscellaneous.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asolano- <asolano-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 08:30:43 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/22 08:48:52 by asolano-         ###   ########.fr       */
+/*   Updated: 2024/01/09 10:41:55 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

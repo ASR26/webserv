@@ -476,3 +476,13 @@ void Server::setServerSocket(int fd)
 {
 	this->serverSocket = fd;
 }
+
+std::string Server::getUpload() const
+{
+	return this->upload;
+}
+
+int Server::getCSize() const
+{
+	return this->c_size;
+}

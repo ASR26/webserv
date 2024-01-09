@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/17 09:25:27 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/08 15:50:40 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Request
 		void responseDelete();
 		void selectLocation();
 		bool isAllowedMethod();
+		void createPostFile(std::string);
 
 		void executeGetRequest();
 		void executePostRequest();
@@ -64,5 +65,4 @@ class Request
 		std::string getHost() const;
 		void setResponse(std::string);
 };
-
 #endif

@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/08 11:46:24 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/09 14:37:17 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,8 @@ void Request::readRequest()
 		return ;
 	}
 	buf[r] = 0;
+	std::cout << "chars: " << r << std::endl;
+	std::cout << "READ: " << buf << std::endl;
 	request += std::string(buf);
 	if (header.empty() && (pos = request.find("\r\n\r\n")) != std::string::npos)
 	{
@@ -177,7 +179,7 @@ void Request::executeGetRequest()
 		return ;
 	}
 	struct stat buf;
-	stat(request_file_path.c_str(), &buf);//check what happens if not all directories in path can be excuted
+	stat(request_file_path.c_str(), &buf);//check what happens if not all directories in path can be executed
 	if (!S_ISDIR(buf.st_mode))
 	{
 		//check if need cgi
@@ -205,8 +207,10 @@ void Request::executeGetRequest()
 	}
 	else
 	{
+		//std::cout << "IS DIRECTORY" << std::endl;
 		if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || server.getAutoIndex())
 		{
+			//std::cout << "LISTING DIRECTORY" << std::endl;
 			//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 51\r\n\r\nwhy are you asking for a directory? You get a list.";
 			//list directory here
 			std::string list_file = "<html><body>";
@@ -306,15 +310,105 @@ void Request::executeGetRequest()
 	}
 }
 
+void Request::createPostFile(std::string name)
+{
+	//(void)name;
+	//std::cout << "location:" << request_file_path << "<-" << std::endl; 
+	//std::cout << "file:" << name << "<-" << std::endl;
+
+
+	if ((loc_index >= 0 && body.size() > (unsigned int)(server.getLocations()[loc_index].getCSize() * 1024)) || (body.size() > (unsigned int)(server.getCSize() * 1024)))
+	{
+		response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nerror from post";
+		return;
+	}
+
+
+	if (request_file_path.back() != '/')
+		request_file_path += "/";
+	if (name.empty())
+		name = "default_name";
+	std::string complete_path = request_file_path + name;
+	if (loc_index >= 0 && !server.getLocations()[loc_index].getUpload().empty())
+	{
+		complete_path = "." + server.getLocations()[loc_index].getRoot() + server.getLocations()[loc_index].getUpload();
+		std::cout << "case 1: " << complete_path << std::endl;
+	}
+	else if (loc_index >= 0 && server.getLocations()[loc_index].getRoot().empty() && !server.getUpload().empty())
+	{
+		complete_path = "." + server.getRoot() + server.getUpload();
+		std::cout << "case 2: " << complete_path << std::endl;
+	}
+	else if (!server.getUpload().empty())
+	{
+		complete_path = "." + server.getRoot() + server.getUpload();
+		std::cout << "case 3: " << complete_path << std::endl;
+	}
+	if (complete_path.back() != '/')
+		complete_path += "/";
+	complete_path += name;
+	std::string complete_path_ext;
+	int count = 0;
+	if (!access(complete_path.c_str(), F_OK))
+	{
+		complete_path_ext = complete_path + "_" + intToStr(count);
+		while (!access(complete_path_ext.c_str(), F_OK))
+		{
+			count++;
+			complete_path_ext = complete_path + "_" + intToStr(count);
+		}
+		complete_path = complete_path_ext;
+	}
+	std::cout << "new file: " << complete_path << std::endl;
+	std::cout << "body: " << body << std::endl;
+	std::ofstream new_file;
+	new_file.open(complete_path);
+	new_file << body;
+	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nhello from post";
+	return ;
+}
+
 void Request::executePostRequest()
 {
-	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nhello from post";
 	struct stat buf;
-	stat(request_file_path.c_str(), &buf);
-	/* if (S_ISDIR(buf.st_mode))
+	std::string filename;
+	if (access(request_file_path.c_str(), F_OK))
 	{
+		std::cout << request_file_path.substr(0, request_file_path.rfind("/")).c_str() << std::endl;
 
-	} */
+		if (!access(request_file_path.substr(0, request_file_path.rfind("/")).c_str(), F_OK))
+		{
+			stat(request_file_path.substr(0, request_file_path.rfind("/")).c_str(), &buf);
+			if (S_ISDIR(buf.st_mode))
+			{
+				std::cout << "POST with file and path exists" << std::endl;
+				filename = request_file_path.substr(request_file_path.rfind("/") + 1, std::string::npos);
+				request_file_path = request_file_path.substr(0, request_file_path.rfind("/")) + "/";
+				createPostFile(filename);
+				return ;
+			}
+		}
+		std::cout << "POST with file and path does not exists" << std::endl;
+		std::string resp = fileToStr("def/404");
+		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		return ;
+	}
+	else
+	{
+		stat(request_file_path.c_str(), &buf);
+		if (S_ISDIR(buf.st_mode))
+		{
+			std::cout << "POST without file and path exists" << std::endl;
+			createPostFile("");
+		}
+		else
+		{
+			std::cout << "POST with existing file and path exists: " << request_file_path << std::endl;
+			filename = request_file_path.substr(request_file_path.rfind("/") + 1, request_file_path.size() - (request_file_path.rfind("/") + 1));
+			request_file_path = request_file_path.substr(0, request_file_path.rfind("/")) + "/";
+			createPostFile(filename);
+		}
+	}
 }
 
 void Request::executeDeleteRequest()
@@ -338,7 +432,7 @@ void Request::executeDeleteRequest()
 
 void Request::formResponse()
 {
-	server.getInfo();
+	//server.getInfo();
 	unsigned long pos_space = header.substr(header.find(" ") + 1, std::string::npos).find(" ");
 	request_file = header.substr(header.find(" ") + 1, pos_space);
 	// /* if (access(request_file_path.c_str(), F_OK))
@@ -385,7 +479,7 @@ void Request::formResponse()
 	}
 	// else if (!server.getRedirpath().empty())
 	// {
-	// 	request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getRedirpath());
+	// 	request_file.replace(0, , server.getRedirpath());
 	// 	//request_file_path = std::string(".") + request_file;
 	// 	std::cout << request_file_path << std::endl;
 	// 	response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
