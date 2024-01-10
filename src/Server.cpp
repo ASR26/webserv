@@ -33,9 +33,7 @@ Server::Server(std::string conf)
 
 	conf.erase(0, 6);
 	n = conf.find("location");
-	if (n == std::string::npos)
-		throw std::runtime_error("Error: 1");//porque exception cuando no hay location?
-	else
+	if (n != std::string::npos)
 	{
 		while (n != std::string::npos)
 		{

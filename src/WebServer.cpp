@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/09 14:39:36 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/10 09:46:58 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,8 +139,16 @@ void WebServer::checkServerSpecification()
 					throw std::runtime_error("Error: upload not a directory");
 				}
 			}
+			if (!servers[i].getLocations()[j].getRedirpath().empty())
+			{
+				if (servers[i].getLocations()[j].getRedircode() != "301" && servers[i].getLocations()[j].getRedircode() != "303" && servers[i].getLocations()[j].getRedircode() != "307")
+				{
+					throw std::runtime_error("Error: invalid return code");
+				}
+			}
 		}
 	}
+
 }
 
 void WebServer::configureServer()
@@ -325,7 +333,7 @@ void WebServer::runWebserv()
 			//std::cout << std::endl << "receiving request" << std::endl;
 			if (!existRequest(finished_event.ident))
 				this->addRequest(finished_event.ident);
-			requestQueue.find(finished_event.ident)->second.readRequest();
+			requestQueue.find(finished_event.ident)->second.readRequest(this->servers);
 			if (requestQueue.find(finished_event.ident)->second.done_read)
 			{
 				assignServerToRequest(requestQueue.find(finished_event.ident)->second);

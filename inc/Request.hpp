@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/08 15:50:40 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/10 11:40:21 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define REQUEST_HPP
 
 # include <string>
+# include "Server.hpp"
 
 class Request
 {
@@ -44,7 +45,9 @@ class Request
 		bool done_read;
 		bool done_write;
 		Request& operator=(const Request& req);
-		void readRequest();
+		Server returnServerOfRequest(std::vector<class Server> servers);
+		int returnLocationIndex(std::string file, Server srv);
+		void readRequest(std::vector<class Server> servers);
 		void sendResponse();
 		void formResponse();
 		void responseGet();

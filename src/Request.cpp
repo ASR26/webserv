@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/09 14:37:17 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/10 11:47:35 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,80 @@ Request& Request::operator=(const Request& req)
 	return *this;
 }
 
-void Request::readRequest()
+Server Request::returnServerOfRequest(std::vector<class Server> servers)
+{
+	std::vector<int> index;
+	
+	unsigned long pos_start = header.find("Host: ");
+	unsigned long pos_end = header.substr(pos_start, std::string::npos).find("\r\n");
+	this->host = (header.substr(pos_start + std::strlen("Host: "), pos_end - std::strlen("Host: ")));
+	//this->host = header.substr(pos_start + std::strlen("Host: "), pos_end - std::strlen("Host: "));
+	std::string port = host.substr(host.find(":") + 1, std::string::npos);
+	for (unsigned long i = 0; i < servers.size(); i++)
+	{
+		//std::cout << "port is: " << port << " server port is: " << servers[i].getPort() << std::endl;
+		if (port == servers[i].getPort())
+			index.push_back(i);
+	}
+	//std::cout << index.size() << std::endl;
+	std::string server_name;
+	pos_end = host.rfind(":");
+	//std::cout << "host: " << req.getHost()[pos_end - 1] << std::endl;
+	if (!std::isdigit(host[pos_end - 1]))
+	{
+		pos_end = host.find(".localhost");
+		if (pos_end != std::string::npos)
+		//std::cout << "pos end -> " << pos_end << std::endl;
+		//std::cout << req.getHost() << std::endl;
+			server_name = host.substr(0, pos_end);
+		//std::cout << server_name << std::endl;
+		else
+			server_name = "";
+	}
+	else
+	{
+		int n = 1;
+		int point_count = 0;
+		while (pos_end - n >= 0 && (std::isdigit(host[pos_end - n]) || host[pos_end - n] == '.') && point_count < 4)
+		{
+			if (host[pos_end - n] == '.')
+				point_count++;
+			n++;
+		}
+		if (pos_end - n < 0)
+			server_name = "";
+		else
+			server_name = host.substr(0, pos_end - n);
+	}
+	//std::cout << server_name << std::endl;
+	if (server_name.empty())
+	{
+		return servers[index[0]];
+	}
+	else
+	{
+		int found = 0;
+		for (unsigned long i = 0; i < index.size(); i++)
+		{
+			for (unsigned long j = 0; j < servers[index[i]].getServerNames().size(); j++)
+			{
+				if (servers[index[i]].getServerNames()[j] == server_name)
+				{
+					found = 1;
+					return servers[index[i]];
+				}
+			}
+		}
+		if (found == 0)
+		{
+			throw std::runtime_error("No server found");
+		}
+		return servers[0];
+	}
+	
+}
+
+void Request::readRequest(std::vector<class Server> servers)
 {
 	int r;
 	char buf[10001];
@@ -109,6 +182,35 @@ void Request::readRequest()
 		if ((pos = header.find("Content-Length: ")) != std::string::npos)
 		{
 			this->body_size = std::atoi(header.substr(pos + std::strlen("Content-Length: "), header.substr(pos, std::string::npos).find("\n") - (pos + std::strlen("Content-Length: "))).c_str());
+			try
+			{
+				Server srv = returnServerOfRequest(servers);
+				unsigned long pos_space = header.substr(header.find(" ") + 1, std::string::npos).find(" ");
+				std::string file = header.substr(header.find(" ") + 1, pos_space);
+				int index_for_location = returnLocationIndex(file, srv);
+				if (index_for_location >= 0)
+				{
+					if (this->body_size > (unsigned int)srv.getLocations()[index_for_location].getCSize())
+					{
+						done_read = true;
+						response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n"; 
+						return ;
+					}
+				}
+				else
+				{
+					if (this->body_size > (unsigned int)srv.getCSize())
+					{
+						done_read = true;
+						response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n"; 
+						return ;
+					}
+				}
+			}
+			catch(const std::exception& e)
+			{
+			}
+			
 			//std::cout << this->body_size << std::endl;
 		}
 		if (request.size() > header.size() + 4)
@@ -135,6 +237,24 @@ void Request::readRequest()
 		//std::cout << this->body << std::endl;
 	}
 	return ;
+}
+
+int Request::returnLocationIndex(std::string file, Server srv)
+{
+	std::vector<std::string> directories = split(file, "/");
+	int index_for_location = -1;
+	size_t max_equal = 0;
+	size_t equal;
+	for (size_t i = 0; i < srv.getLocations().size(); i++)
+	{
+		equal = nbrEqualStr(directories, split(srv.getLocations()[i].getLocation(), "/"));
+		if (equal >= split(srv.getLocations()[i].getLocation(), "/").size() && equal > max_equal)
+		{
+			max_equal = equal;
+			index_for_location = i;
+		}
+	}
+	return index_for_location;
 }
 
 void Request::selectLocation()
@@ -455,7 +575,13 @@ void Request::formResponse()
 		//std::cout << request_file_path << std::endl;
 		std::cout << request_file << std::endl;
 		//std::cout << request_file_path << std::endl;
-		response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		if (server.getLocations()[loc_index].getRedircode() == "307")
+			response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		else if (server.getLocations()[loc_index].getRedircode() == "303")
+			response = std::string("HTTP/1.1 303 See Other\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		else if (server.getLocations()[loc_index].getRedircode() == "301")
+			response = std::string("HTTP/1.1 301 Moved Permanently\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
+		
 		// if (access(request_file.c_str(), F_OK))
 		// {
 		// 	if (method == "POST")
