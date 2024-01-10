@@ -106,7 +106,7 @@ Server::Server(std::string conf)
 		while (n != std::string::npos)
 		{
 			i = n;
-			while (conf[i] != ';')
+			while (conf[i] != '\n')
 				i++;
 			j = i;
 			while (conf[j] != ' ')
@@ -217,21 +217,9 @@ Server::Server(std::string conf)
 	else
 	{
 		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n + 1) - n - 7));
+		if (upload[0] != '/')
+			throw std::exception();
 		conf.erase(conf.find("upload"), conf.find("\n", conf.find("upload")) - conf.find("upload"));
-	}
-
-	n = conf.find("return");
-	if (n == std::string::npos)
-	{
-		redirec.first = "";
-		redirec.second = "";
-	}
-	else
-	{
-		redirec.first = trimSpaces(conf.substr(n + 7, conf.find(" ", n + 7) - n - 7));
-		n = conf.find(" ", n + 8);
-		redirec.second = trimSpaces(conf.substr(n + 1, conf.find("\n", n + 1) - n - 1));
-		conf.erase(conf.find("return"), conf.find("\n", conf.find("return")) - conf.find("return"));
 	}
 
 	i = -1;
