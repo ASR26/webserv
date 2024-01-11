@@ -99,10 +99,10 @@ Server::Server(std::string conf)
 	}
 
 	n = conf.find("error_page");
-	if (n == std::string::npos)
-		error[404] = "default_location";//no hace falta
-	else
-	{
+	//if (n == std::string::npos)
+	//	error[404] = "default_location";//no hace falta
+	//else
+	//{
 		while (n != std::string::npos)
 		{
 			i = n;
@@ -124,7 +124,7 @@ Server::Server(std::string conf)
 			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
 			n = conf.find("error_page", n);
 		}
-	}
+	//}
 
 	n = conf.find("client_max_body_size");
 	if (n == std::string::npos)
@@ -411,7 +411,7 @@ std::vector<std::string> Server::getServerNames() const
 	return this->s_name;
 }
 
-std::vector<LocationParser> Server::getLocations() const
+std::vector<LocationParser> &Server::getLocations()
 {
 	return this->location;
 }
@@ -471,4 +471,9 @@ std::string Server::getUpload() const
 int Server::getCSize() const
 {
 	return this->c_size;
+}
+
+std::map<int, std::string> &Server::getError()
+{
+	return this->error;
 }

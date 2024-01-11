@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/09 11:55:58 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/11 11:51:28 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,10 @@ LocationParser::LocationParser(std::string conf)
 	else
 	{
 		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n) - (n + 7)));
+		if (upload[upload.length() - 1] == '/')
+			throw std::exception();
+		else if (upload[0] != '/')
+			throw std::exception();
 		conf.erase(n, conf.find("\n", n) - n);
 	}
 
@@ -216,6 +220,13 @@ LocationParser &LocationParser::operator=(const LocationParser& loc)
 	return (*this);
 }
 
+void LocationParser::completeRoot(std::string server_root)
+{
+	std::string tmp = root;
+	root = server_root + tmp;
+	return ;
+}
+
 void	LocationParser::getInfo(void)
 {
 	std::cout << "Location : " << location << std::endl;
@@ -258,7 +269,7 @@ std::string	LocationParser::getCGI() const
 	return (cgi_pass);
 }
 
-std::string LocationParser::getLocation() const
+std::string LocationParser::getLocation()
 {
 	return this->location;
 }

@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/10 11:47:35 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/11 14:17:08 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,6 +282,50 @@ bool Request::isAllowedMethod()
 		return server.getLocations()[loc_index].isAllowedMethod(method);
 }
 
+void Request::formErrorResponse(int error_code)
+{
+	std::string error_file = "";
+	if (loc_index < 0 && server.getError().find(error_code) != server.getError().end())
+	{
+		error_file = server.getError().find(error_code)->second;
+		if (access(error_file.c_str(), F_OK))
+			error_file = "";
+		else
+		{
+			struct stat buf;
+			stat(request_file_path.c_str(), &buf);
+			if (!S_ISDIR(buf.st_mode))
+				error_file = "";
+		}
+	}
+	switch (error_code)
+	{
+		case 403:
+			response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: ";
+			if (error_file.empty())
+				error_file = "./example_resources/def/403.html";
+			break;
+		case 404:
+			response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: ";
+			if (error_file.empty())
+				error_file = "./example_resources/def/404.html";
+			break;
+		case 405:
+			response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length: ";
+			if (error_file.empty())
+				error_file = "./example_resources/def/405.html";
+			break;
+		case 413:
+			response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
+			if (error_file.empty())
+				error_file = "./example_resources/def/405.html";
+			break;			
+		//default:
+			//response = "...";
+	}
+
+}
+
 void Request::executeGetRequest()
 {
 	if (request_file_path.find("?") != std::string::npos)
@@ -327,8 +371,104 @@ void Request::executeGetRequest()
 	}
 	else
 	{
-		//std::cout << "IS DIRECTORY" << std::endl;
-		if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || server.getAutoIndex())
+		std::string index_path_file;
+		if (loc_index >= 0)
+		{
+			index_path_file = "." + server.getLocations()[loc_index].getRoot() + "/" + server.getLocations()[loc_index].getIndex();
+		}
+		else
+		{
+			index_path_file = "." + server.getRoot() + "/" + server.getIndex();
+		}
+		std::cout << index_path_file << std::endl;
+		if (access(index_path_file.c_str(), F_OK))
+		{
+			if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || (loc_index < 0 && server.getAutoIndex()))
+			{
+				std::string list_file = "<html><body>";
+				DIR *dir_fd = opendir(request_file_path.c_str());
+				if (!dir_fd)
+				{
+					std::string resp = fileToStr("def/403");
+					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+					return ;
+				}
+				struct dirent *dir_entry;
+				dir_entry = readdir(dir_fd);
+				std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+				list_file += "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>";
+				dir_entry = readdir(dir_fd);
+				std::cout << "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+				list_file += "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>";
+				while ((dir_entry = readdir(dir_fd)) != NULL)
+				{
+					//std::cout << dir_entry->d_name << std::endl;
+					//std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + ">" + std::string(dir_entry->d_name) + "</a>" << std::endl;ç
+					if (request_file_path.back() != '/')
+						request_file_path += "/";
+					list_file += "<a href=" + std::string("\"") + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>";
+				}
+				closedir(dir_fd);
+				list_file += "</body></html>";
+				response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(list_file.size()) + "\r\n\r\n" + list_file;
+				return ;
+			}
+			else
+			{
+				std::string resp = fileToStr("def/404");
+				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				return ;
+			}
+		}
+		else
+		{
+			struct stat buf2;
+			stat(index_path_file.c_str(), &buf2);
+			if (S_ISDIR(buf2.st_mode))
+			{
+				std::string resp = fileToStr("def/403");
+				response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				return ;
+			}
+			std::ifstream file(index_path_file);
+			std::string str, content;
+			if (file.bad() || file.fail())
+			{
+				std::string resp = fileToStr("def/403");
+				response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				return ;
+			}
+			while (!file.eof())
+			{
+				getline(file, str);
+				content += str;
+				content.push_back('\n');
+			}
+			file.close();
+			int i = content.size();
+			std::ostringstream s;
+			s << i;
+			std::string content_len(s.str());	
+
+			response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
+			}
+		}
+		
+
+
+
+
+
+
+		/* if ((loc_index >= 0 && !server.getLocations()[loc_index].getIndex().empty()))
+		{
+			request_file_path = std::string(".") + server.getLocations()[loc_index].getRoot() + std::string("/") + server.getLocations()[loc_index].getIndex();
+		}
+		if ((loc_index < 0 && !server.getIndex().empty()))
+		{
+			
+		} */
+		/* if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || server.getAutoIndex())
 		{
 			//std::cout << "LISTING DIRECTORY" << std::endl;
 			//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 51\r\n\r\nwhy are you asking for a directory? You get a list.";
@@ -425,9 +565,9 @@ void Request::executeGetRequest()
 
 				response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
 			}
-		}
+		} */
 		//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 35\r\n\r\nwhy are you asking for a directory?";
-	}
+	//}
 }
 
 void Request::createPostFile(std::string name)

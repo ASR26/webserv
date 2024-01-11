@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/10 09:46:58 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/11 11:51:06 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,7 @@ void WebServer::checkServerSpecification()
 		}
 		for (unsigned int j = 0; j < servers[i].getLocations().size(); j++)
 		{
+			servers[i].getLocations()[j].completeRoot(servers[i].getRoot());
 			if (!servers[i].getLocations()[j].getRoot().empty())
 			{
 				full_root = "." + servers[i].getLocations()[j].getRoot();
