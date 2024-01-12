@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/11 11:49:36 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/12 10:40:29 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ class LocationParser
 		std::vector<std::string> getMethods() const;
 		int getCSize() const;
 		void completeRoot(std::string server_root);
+		std::map<int, std::string> &getError();
 };
 
 #endif

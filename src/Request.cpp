@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/11 14:17:08 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/12 11:33:52 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,14 +287,31 @@ void Request::formErrorResponse(int error_code)
 	std::string error_file = "";
 	if (loc_index < 0 && server.getError().find(error_code) != server.getError().end())
 	{
-		error_file = server.getError().find(error_code)->second;
+		error_file = "." + server.getRoot() + server.getError().find(error_code)->second;
+		std::cout << "Error file: " << error_file << std::endl;
+		if (access(error_file.c_str(), F_OK))
+		{
+			std::cout << "file doesn't exist" << std::endl;
+			error_file = "";
+		}
+		else
+		{
+			struct stat buf;
+			stat(request_file_path.c_str(), &buf);
+			if (S_ISDIR(buf.st_mode))
+				error_file = "";
+		}
+	}
+	if (loc_index >= 0 && server.getLocations()[loc_index].getError().find(error_code) != server.getLocations()[loc_index].getError().end())
+	{
+		error_file = "." + server.getLocations()[loc_index].getRoot() + server.getLocations()[loc_index].getError().find(error_code)->second;
 		if (access(error_file.c_str(), F_OK))
 			error_file = "";
 		else
 		{
 			struct stat buf;
 			stat(request_file_path.c_str(), &buf);
-			if (!S_ISDIR(buf.st_mode))
+			if (S_ISDIR(buf.st_mode))
 				error_file = "";
 		}
 	}
@@ -303,27 +320,28 @@ void Request::formErrorResponse(int error_code)
 		case 403:
 			response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: ";
 			if (error_file.empty())
-				error_file = "./example_resources/def/403.html";
+				error_file = "./example_resources/def/403";
 			break;
 		case 404:
 			response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: ";
 			if (error_file.empty())
-				error_file = "./example_resources/def/404.html";
+				error_file = "./example_resources/def/404";
 			break;
 		case 405:
 			response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length: ";
 			if (error_file.empty())
-				error_file = "./example_resources/def/405.html";
+				error_file = "./example_resources/def/405";
 			break;
 		case 413:
-			response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
+			response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: ";
 			if (error_file.empty())
-				error_file = "./example_resources/def/405.html";
-			break;			
-		//default:
-			//response = "...";
+				error_file = "./example_resources/def/413";
+			break;
 	}
-
+	//std::cout << "Error file: " << error_file << std::endl;
+	std::string resp = fileToStr(error_file.c_str());
+	response += intToStr(resp.size()) + "\r\n\r\n" + resp;
+	//std::cout << "Error response: " << std::endl << response << std::endl;
 }
 
 void Request::executeGetRequest()
@@ -338,8 +356,9 @@ void Request::executeGetRequest()
 	}
 	if (access(request_file_path.c_str(), F_OK))
 	{
-		std::string resp = fileToStr("def/404");
-		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		//std::string resp = fileToStr("def/404");
+		//response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		formErrorResponse(404);
 		return ;
 	}
 	struct stat buf;
@@ -351,8 +370,9 @@ void Request::executeGetRequest()
 		std::string str, content;
 		if (file.bad() || file.fail())
 		{
-			std::string resp = fileToStr("def/403");
-			response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+			//std::string resp = fileToStr("def/403");
+			//response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+			formErrorResponse(403);
 			return ;
 		}
 		while (!file.eof())
@@ -389,8 +409,9 @@ void Request::executeGetRequest()
 				DIR *dir_fd = opendir(request_file_path.c_str());
 				if (!dir_fd)
 				{
-					std::string resp = fileToStr("def/403");
-					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+					//std::string resp = fileToStr("def/403");
+					//response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+					formErrorResponse(403);
 					return ;
 				}
 				struct dirent *dir_entry;
@@ -415,8 +436,9 @@ void Request::executeGetRequest()
 			}
 			else
 			{
-				std::string resp = fileToStr("def/404");
-				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				//std::string resp = fileToStr("def/404");
+				//response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				formErrorResponse(404);
 				return ;
 			}
 		}
@@ -426,16 +448,18 @@ void Request::executeGetRequest()
 			stat(index_path_file.c_str(), &buf2);
 			if (S_ISDIR(buf2.st_mode))
 			{
-				std::string resp = fileToStr("def/403");
-				response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				//std::string resp = fileToStr("def/403");
+				//response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				formErrorResponse(403);
 				return ;
 			}
 			std::ifstream file(index_path_file);
 			std::string str, content;
 			if (file.bad() || file.fail())
 			{
-				std::string resp = fileToStr("def/403");
-				response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				//std::string resp = fileToStr("def/403");
+				//response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+				formErrorResponse(403);
 				return ;
 			}
 			while (!file.eof())
@@ -579,7 +603,8 @@ void Request::createPostFile(std::string name)
 
 	if ((loc_index >= 0 && body.size() > (unsigned int)(server.getLocations()[loc_index].getCSize() * 1024)) || (body.size() > (unsigned int)(server.getCSize() * 1024)))
 	{
-		response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nerror from post";
+		//response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nerror from post";
+		formErrorResponse(413);
 		return;
 	}
 
@@ -649,8 +674,9 @@ void Request::executePostRequest()
 			}
 		}
 		std::cout << "POST with file and path does not exists" << std::endl;
-		std::string resp = fileToStr("def/404");
-		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		//std::string resp = fileToStr("def/404");
+		//response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		formErrorResponse(404);
 		return ;
 	}
 	else
@@ -676,14 +702,16 @@ void Request::executeDeleteRequest()
 	//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 17\r\n\r\nhello from delete";
 	if (access(request_file_path.c_str(), F_OK))
 	{
-		std::string resp = fileToStr("def/404");
-		response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		//std::string resp = fileToStr("def/404");
+		//response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		formErrorResponse(404);
 		return ;
 	}
 	if (std::remove(request_file_path.c_str()))
 	{
-		std::string resp = fileToStr("def/403");
-		response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		//std::string resp = fileToStr("def/403");
+		//response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		formErrorResponse(403);
 		return ;
 	}
 	std::string resp = fileToStr("def/delete");
@@ -703,9 +731,10 @@ void Request::formResponse()
 	selectLocation();
 	if (!isAllowedMethod())
 	{
-		std::string resp = fileToStr("def/405");
+		//std::string resp = fileToStr("def/405");
 		method = "GET";
-		response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		//response = "HTTP/1.1 405 Method Not Allowed\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
+		formErrorResponse(405);
 	 	return ;
 	}
 	if (loc_index >= 0 && !server.getLocations()[loc_index].getRedirpath().empty())

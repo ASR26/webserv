@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/11 11:51:28 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/12 11:32:59 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,7 @@ LocationParser::LocationParser(std::string conf)
 		while (n != std::string::npos)
 		{
 			i = n;
-			while (conf[i] != ';')
+			while (conf[i] != '\n')
 				i++;
 			j = i;
 			while (conf[j] != ' ')
@@ -182,7 +182,7 @@ LocationParser::LocationParser(std::string conf)
 				n++;
 			while (std::atoi(&conf[n]))
 			{
-				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j, i - j));
+				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j + 1, i - j - 1));
 				n += 1 + std::to_string(std::atoi(&conf[n])).length();
 			}
 			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
@@ -319,4 +319,9 @@ std::string LocationParser::getUpload() const
 int LocationParser::getCSize() const
 {
 	return this->c_size;
+}
+
+std::map<int, std::string> &LocationParser::getError()
+{
+	return this->error;
 }
