@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/15 10:12:23 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/15 15:25:29 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ class Request
 		std::string body;
 		std::string method;
 		std::string response;
+		std::string original_request;
 		void setMethod();
 
 		class Server server;

@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/15 11:37:04 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/15 15:33:11 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -417,6 +417,9 @@ void Request::executeGetRequest()
 		{
 			if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || (loc_index < 0 && server.getAutoIndex()))
 			{
+				if (original_request.back() != '/')
+					original_request.push_back('/');
+				
 				std::string list_file = "<html><body>";
 				DIR *dir_fd = opendir(request_file_path.c_str());
 				if (!dir_fd)
@@ -428,18 +431,22 @@ void Request::executeGetRequest()
 				}
 				struct dirent *dir_entry;
 				dir_entry = readdir(dir_fd);
-				std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
-				list_file += "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>";
+				std::cout << "<a href=\"" + original_request + "\">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+				list_file += "<a href=\"" + original_request + "\">" + std::string(dir_entry->d_name) + "</a></br>";
 				dir_entry = readdir(dir_fd);
-				std::cout << "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
-				list_file += "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>";
+				std::string prev = original_request.substr(0, original_request.substr(0, original_request.size() - 1).rfind("/"));
+				if (prev.empty())
+					prev = "/";
+				std::cout << "<a href=\"" + prev + "\">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+				list_file += "<a href=\"" + prev + "\">" + std::string(dir_entry->d_name) + "</a></br>";
 				while ((dir_entry = readdir(dir_fd)) != NULL)
 				{
 					//std::cout << dir_entry->d_name << std::endl;
 					//std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + ">" + std::string(dir_entry->d_name) + "</a>" << std::endl;ç
 					if (request_file_path.back() != '/')
 						request_file_path += "/";
-					list_file += "<a href=" + std::string("\"") + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>";
+					list_file += "<a href=" + std::string("\"") + original_request + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>";
+					std::cout << "<a href=" + std::string("\"") + original_request + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
 				}
 				closedir(dir_fd);
 				list_file += "</body></html>";
@@ -599,7 +606,7 @@ void Request::executePostRequest()
 		{
 			std::cout << "POST with existing file and path exists: " << request_file_path << std::endl;
 
-			/* for (std::map<std::string, std::string>::iterator it = server.getCGI().begin(); it != server.getCGI().end(); it++)
+			for (std::map<std::string, std::string>::iterator it = server.getCGI().begin(); it != server.getCGI().end(); it++)
 			{
 				if (request_file_path.find("." + it->first) != std::string::npos && request_file_path.rfind("." + it->first) == request_file_path.size() - it->first.size() - 1)
 				{
@@ -607,7 +614,7 @@ void Request::executePostRequest()
 					executeCGI(it->first);
 					return ;
 				}
-			} */
+			}
 			filename = request_file_path.substr(request_file_path.rfind("/") + 1, request_file_path.size() - (request_file_path.rfind("/") + 1));
 			request_file_path = request_file_path.substr(0, request_file_path.rfind("/")) + "/";
 			createPostFile(filename);
@@ -645,7 +652,7 @@ void Request::executeCGI(std::string type)
 	char c;
 	std::string hex;
 	std::vector<std::string> var_val;
-	/* for (int i = 0; i < var_vec.size(); i++)
+	for (unsigned int i = 0; i < var_vec.size(); i++)
 	{
 		value.clear();
 		var_val = split(var_vec[i], "=");
@@ -653,7 +660,7 @@ void Request::executeCGI(std::string type)
 			var_val.push_back("");
 		while (var_val[1].find("+") != std::string::npos)
 			var_val[1].replace(var_val[1].find("+"), 1, " ");
-		for (int j = 0; j < var_val[1].size(); j++)
+		for (unsigned int j = 0; j < var_val[1].size(); j++)
 		{
 			if (var_val[1][j] == '%')
 			{
@@ -665,7 +672,26 @@ void Request::executeCGI(std::string type)
 			else
 				value.push_back(var_val[1][j]);
 		}
-	} */
+		values.push_back(value);
+	}
+
+	char *args[values.size() + 3];
+	args[0] = (char *)server.getCGI()[type].c_str();
+	args[1] = (char *)request_file_path.c_str();
+	unsigned int i = 2;
+	while (i < values.size() + 3 - 1)
+	{
+		args[i] = (char *)values[i - 2].c_str();
+		i++;
+	}
+	args[i] = NULL;
+
+	i = 0;
+	while(args[i])
+	{
+		std::cout << args[i] <<std::endl;
+		i++; 
+	}
 
 
 
@@ -679,6 +705,7 @@ void Request::formResponse()
 	//server.getInfo();
 	unsigned long pos_space = header.substr(header.find(" ") + 1, std::string::npos).find(" ");
 	request_file = header.substr(header.find(" ") + 1, pos_space);
+	original_request = request_file;
 	// /* if (access(request_file_path.c_str(), F_OK))
 	// {
 	// 	response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
