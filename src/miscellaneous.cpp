@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 08:30:43 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/09 10:41:55 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/15 11:42:45 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,4 +85,18 @@ std::string fileToStr(std::string file)
 	std::stringstream buffer;
 	buffer << s.rdbuf();
 	return buffer.str();
+}
+
+int	hexToDec(std::string num)
+{
+	std::string ascii = "";
+	unsigned long result = 0;
+    for (size_t i = 0; i < num.length(); i += 2)
+    {
+		std::string part = num.substr(i, 2);
+        char ch = strtoul(part.c_str(), nullptr, 16);
+        ascii += ch;
+    }
+	std::cout << ascii << std::endl;
+    return result;
 }
