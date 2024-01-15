@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/11 12:51:32 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/15 10:12:23 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,9 @@ class Request
 		void readRequest(std::vector<class Server> servers);
 		void sendResponse();
 		void formResponse();
-		void responseGet();
-		void responsePost();
-		void responseDelete();
+		//void responseGet();
+		//void responsePost();
+		//void responseDelete();
 		void selectLocation();
 		bool isAllowedMethod();
 		void createPostFile(std::string);
@@ -68,5 +68,6 @@ class Request
 		std::string getHost() const;
 		void setResponse(std::string);
 		void formErrorResponse(int);
+		void executeCGI(std::string type);
 };
 #endif

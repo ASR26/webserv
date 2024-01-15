@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/12 11:33:52 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/15 11:37:04 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,7 +193,8 @@ void Request::readRequest(std::vector<class Server> servers)
 					if (this->body_size > (unsigned int)srv.getLocations()[index_for_location].getCSize())
 					{
 						done_read = true;
-						response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n"; 
+						//response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
+						formErrorResponse(413);
 						return ;
 					}
 				}
@@ -202,7 +203,8 @@ void Request::readRequest(std::vector<class Server> servers)
 					if (this->body_size > (unsigned int)srv.getCSize())
 					{
 						done_read = true;
-						response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n"; 
+						//response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
+						formErrorResponse(413);
 						return ;
 					}
 				}
@@ -366,6 +368,16 @@ void Request::executeGetRequest()
 	if (!S_ISDIR(buf.st_mode))
 	{
 		//check if need cgi
+
+		for (std::map<std::string, std::string>::iterator it = server.getCGI().begin(); it != server.getCGI().end(); it++)
+		{
+			if (request_file_path.find("." + it->first) != std::string::npos && request_file_path.rfind("." + it->first) == request_file_path.size() - it->first.size() - 1)
+			{
+				executeCGI(it->first);
+				return;
+			}
+		}
+
 		std::ifstream file(request_file_path);
 		std::string str, content;
 		if (file.bad() || file.fail())
@@ -475,123 +487,8 @@ void Request::executeGetRequest()
 			std::string content_len(s.str());	
 
 			response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
-			}
 		}
-		
-
-
-
-
-
-
-		/* if ((loc_index >= 0 && !server.getLocations()[loc_index].getIndex().empty()))
-		{
-			request_file_path = std::string(".") + server.getLocations()[loc_index].getRoot() + std::string("/") + server.getLocations()[loc_index].getIndex();
-		}
-		if ((loc_index < 0 && !server.getIndex().empty()))
-		{
-			
-		} */
-		/* if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || server.getAutoIndex())
-		{
-			//std::cout << "LISTING DIRECTORY" << std::endl;
-			//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 51\r\n\r\nwhy are you asking for a directory? You get a list.";
-			//list directory here
-			std::string list_file = "<html><body>";
-			DIR *dir_fd = opendir(request_file_path.c_str());
-			if (!dir_fd)
-			{
-				std::string resp = fileToStr("def/403");
-				response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
-				return ;
-			}
-			struct dirent *dir_entry;
-			dir_entry = readdir(dir_fd);
-			std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
-			list_file += "<a href=" + host + request_file_path.substr(1, std::string::npos) + ">" + std::string(dir_entry->d_name) + "</a></br>";
-			dir_entry = readdir(dir_fd);
-			std::cout << "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
-			list_file += "<a href=" + host + request_file_path.substr(1, request_file_path.rfind("/") - 1) + ">" + std::string(dir_entry->d_name) + "</a></br>";
-			while ((dir_entry = readdir(dir_fd)) != NULL)
-			{
-				//std::cout << dir_entry->d_name << std::endl;
-				//std::cout << "<a href=" + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + ">" + std::string(dir_entry->d_name) + "</a>" << std::endl;ç
-				if (request_file_path.back() != '/')
-					request_file_path += "/";
-				list_file += "<a href=" + std::string("\"") + host + request_file_path.substr(1, std::string::npos) + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>";
-			}
-			closedir(dir_fd);
-			list_file += "</body></html>";
-			response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(list_file.size()) + "\r\n\r\n" + list_file;
-			return ;
-		}
-		else
-		{
-			if (loc_index >= 0 && !server.getLocations()[loc_index].getRoot().empty())
-			{
-				request_file_path = std::string(".") + server.getLocations()[loc_index].getRoot() + std::string("/") + server.getLocations()[loc_index].getIndex();
-				if (access(request_file_path.c_str(), F_OK))
-				{
-					std::string resp = fileToStr("def/404");
-					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
-					return ;
-				}
-				std::ifstream file(request_file_path);
-				std::string str, content;
-				if (file.bad() || file.fail())
-				{
-					std::string resp = fileToStr("def/403");
-					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
-					return ;
-				}
-				while (!file.eof())
-				{
-					getline(file, str);
-					content += str;
-					content.push_back('\n');
-				}
-				file.close();
-				int i = content.size();
-				std::ostringstream s;
-				s << i;
-				std::string content_len(s.str());	
-
-				response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
-			}
-			else
-			{
-				request_file_path = std::string(".") + server.getRoot() + std::string("/") + server.getIndex();
-				if (access(request_file_path.c_str(), F_OK))
-				{
-					std::string resp = fileToStr("def/404");
-					response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
-					return ;
-				}
-				std::ifstream file(request_file_path);
-				std::string str, content;
-				if (file.bad() || file.fail())
-				{
-					std::string resp = fileToStr("def/403");
-					response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(resp.size()) + "\r\n\r\n" + resp;
-					return ;
-				}
-				while (!file.eof())
-				{
-					getline(file, str);
-					content += str;
-					content.push_back('\n');
-				}
-				file.close();
-				int i = content.size();
-				std::ostringstream s;
-				s << i;
-				std::string content_len(s.str());	
-
-				response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
-			}
-		} */
-		//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 35\r\n\r\nwhy are you asking for a directory?";
-	//}
+	}
 }
 
 void Request::createPostFile(std::string name)
@@ -600,6 +497,7 @@ void Request::createPostFile(std::string name)
 	//std::cout << "location:" << request_file_path << "<-" << std::endl; 
 	//std::cout << "file:" << name << "<-" << std::endl;
 
+	std::string ext = "";
 
 	if ((loc_index >= 0 && body.size() > (unsigned int)(server.getLocations()[loc_index].getCSize() * 1024)) || (body.size() > (unsigned int)(server.getCSize() * 1024)))
 	{
@@ -608,12 +506,19 @@ void Request::createPostFile(std::string name)
 		return;
 	}
 
-
 	if (request_file_path.back() != '/')
 		request_file_path += "/";
 	if (name.empty())
 		name = "default_name";
-	std::string complete_path = request_file_path + name;
+	else
+	{
+		if (name.find(".") != std::string::npos)
+		{
+			ext = name.substr(name.find("."), name.size() - name.find("."));
+			name = name.substr(0, name.find("."));
+		}
+	}
+	std::string complete_path = request_file_path;
 	if (loc_index >= 0 && !server.getLocations()[loc_index].getUpload().empty())
 	{
 		complete_path = "." + server.getLocations()[loc_index].getRoot() + server.getLocations()[loc_index].getUpload();
@@ -631,25 +536,25 @@ void Request::createPostFile(std::string name)
 	}
 	if (complete_path.back() != '/')
 		complete_path += "/";
-	complete_path += name;
-	std::string complete_path_ext;
+	//complete_path += name + ext;
+	std::string complete_path_ext = complete_path + name + ext;
 	int count = 0;
-	if (!access(complete_path.c_str(), F_OK))
+	if (!access(complete_path_ext.c_str(), F_OK))
 	{
-		complete_path_ext = complete_path + "_" + intToStr(count);
+		complete_path_ext = complete_path + name + "_" + intToStr(count) + ext;
 		while (!access(complete_path_ext.c_str(), F_OK))
 		{
 			count++;
-			complete_path_ext = complete_path + "_" + intToStr(count);
+			complete_path_ext = complete_path + name + "_" + intToStr(count) + ext;
 		}
-		complete_path = complete_path_ext;
 	}
+	complete_path = complete_path_ext;
 	std::cout << "new file: " << complete_path << std::endl;
 	std::cout << "body: " << body << std::endl;
 	std::ofstream new_file;
 	new_file.open(complete_path);
 	new_file << body;
-	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 15\r\n\r\nhello from post";
+	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nLocation: " + complete_path + "\r\n\r\n";
 	return ;
 }
 
@@ -657,6 +562,9 @@ void Request::executePostRequest()
 {
 	struct stat buf;
 	std::string filename;
+
+	//std::cout << "called POST" << std::endl;
+
 	if (access(request_file_path.c_str(), F_OK))
 	{
 		std::cout << request_file_path.substr(0, request_file_path.rfind("/")).c_str() << std::endl;
@@ -690,6 +598,16 @@ void Request::executePostRequest()
 		else
 		{
 			std::cout << "POST with existing file and path exists: " << request_file_path << std::endl;
+
+			/* for (std::map<std::string, std::string>::iterator it = server.getCGI().begin(); it != server.getCGI().end(); it++)
+			{
+				if (request_file_path.find("." + it->first) != std::string::npos && request_file_path.rfind("." + it->first) == request_file_path.size() - it->first.size() - 1)
+				{
+					query_string = body;
+					executeCGI(it->first);
+					return ;
+				}
+			} */
 			filename = request_file_path.substr(request_file_path.rfind("/") + 1, request_file_path.size() - (request_file_path.rfind("/") + 1));
 			request_file_path = request_file_path.substr(0, request_file_path.rfind("/")) + "/";
 			createPostFile(filename);
@@ -716,6 +634,44 @@ void Request::executeDeleteRequest()
 	}
 	std::string resp = fileToStr("def/delete");
 	response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + intToStr(resp.size()) + "\r\n\r\n" + resp;
+}
+
+void Request::executeCGI(std::string type)
+{
+	(void)type;
+	std::vector<std::string> var_vec = split(query_string, "&");
+	std::vector<std::string> values;
+	std::string value;
+	char c;
+	std::string hex;
+	std::vector<std::string> var_val;
+	/* for (int i = 0; i < var_vec.size(); i++)
+	{
+		value.clear();
+		var_val = split(var_vec[i], "=");
+		if (var_val.size() == 1)
+			var_val.push_back("");
+		while (var_val[1].find("+") != std::string::npos)
+			var_val[1].replace(var_val[1].find("+"), 1, " ");
+		for (int j = 0; j < var_val[1].size(); j++)
+		{
+			if (var_val[1][j] == '%')
+			{
+				hex = var_val[1].substr(j + 1, 2);
+				c = hexToDec(hex);
+				value.push_back(c);
+				j += 2;
+			}
+			else
+				value.push_back(var_val[1][j]);
+		}
+	} */
+
+
+
+
+	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 3\r\n\r\nCGI";
+	return ;
 }
 
 void Request::formResponse()

@@ -477,3 +477,8 @@ std::map<int, std::string> &Server::getError()
 {
 	return this->error;
 }
+
+std::map<std::string, std::string> &Server::getCGI()
+{
+	return this->cgi;
+}
