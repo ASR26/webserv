@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/15 15:33:11 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/18 12:21:09 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,6 +158,145 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 	}
 	
 }
+
+/* void Request::readRequest(std::vector<class Server> servers)
+{
+	int r;
+	char buf[10001];
+	unsigned long pos;
+	bool request_end = false;
+
+	r = read(this->fd, buf, 10000);
+	if (r <= 0)
+	{
+		//for -1 write error/send error code?
+		return ;
+	}
+	buf[r] = 0;
+	//std::cout << "chars: " << r << std::endl;
+	//std::cout << "READ: " << buf << std::endl;
+	request += std::string(buf);
+	//std::cout << "entering" << std::endl;
+	if (header.empty() && (pos = request.find("\r\n\r\n")) != std::string::npos)
+	{
+		
+		this->header = request.substr(0, pos);
+		//std::cout << this->request << std::endl;
+		if ((pos = header.find("Content-Type: ")) != std::string::npos)
+		{
+			this->content_type = header.substr(pos + 14, header.find_first_of(";\n", pos + 14) - pos - 14);
+			//std::cout << this->content_type << std::endl;
+		}
+		if ((pos = header.find("Content-Length: ")) != std::string::npos)
+		{
+			this->body_size = std::atoi(header.substr(pos + std::strlen("Content-Length: "), header.substr(pos, std::string::npos).find("\n") - (pos + std::strlen("Content-Length: "))).c_str());
+			try
+			{
+				Server srv = returnServerOfRequest(servers);
+				unsigned long pos_space = header.substr(header.find(" ") + 1, std::string::npos).find(" ");
+				std::string file = header.substr(header.find(" ") + 1, pos_space);
+				int index_for_location = returnLocationIndex(file, srv);
+				if (index_for_location >= 0)
+				{
+					if (this->body_size > (unsigned int)srv.getLocations()[index_for_location].getCSize() * 1024)
+					{
+						done_read = true;
+						//response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
+						formErrorResponse(413);
+						return ;
+					}
+				}
+				else
+				{
+					if (this->body_size > (unsigned int)srv.getCSize() * 1024)
+					{
+						done_read = true;
+						//response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
+						formErrorResponse(413);
+						return ;
+					}
+				}
+			}
+			catch(const std::exception& e)
+			{
+			}
+		}
+		if (header.find("Expect: 100-continue") != std::string::npos)
+		{
+			write(this->fd, "HTTP/1.1 100 CONTINUE\n", 22);
+		}
+		if (header.find("Content-Type: multipart/form-data") != std::string::npos)
+		{
+			int begin = header.find("boundary=");
+			int end = header.substr(begin + 9, header.size() - begin - 9).find("\n");
+			boundary = header.substr(begin + 9, end - 1);
+			//std::cout << "boundary: " << boundary << std::endl;
+			boundary_end = boundary + "--";
+			//std::cout << "boundary_end: " << std::endl;
+			//std::cout << boundary_end << std::endl;
+			//std::cout << "boundary size: " << boundary.size() << " -> boundar_end size: " << boundary_end.size() << " begin + 9: " << begin + 9 << " end: " << end << std::endl;
+			multipart = true;
+		}
+		else
+			multipart = false;
+		if (request.size() > header.size() + 4)
+		{
+			if (multipart)
+			{
+				body = request.substr(header.size() + 4, std::string::npos);
+				if (body.find(boundary))
+				{
+					std::cout << "Found boundary" << std::endl;
+				}
+			}
+			else
+				body = request.substr(header.size() + 4, std::string::npos);
+			//std::cout << "body: " << this->body << std::endl;
+		}
+		request.clear();
+	}
+	else if (!header.empty())
+	{
+		if (multipart)
+		{
+			//std::cout << "reading multipart" << std::endl;
+			std::cout << "REQUEST: " << request << std::endl;
+			if (request.find(boundary_end) != std::string::npos)
+			{
+				std::cout << "------------------------------------------" << std::endl;
+				std::cout << "request with end" << request << std::endl;
+				std::cout << "------------------------------------------" << std::endl;
+				request_end = true;
+			}
+			request.clear();
+			//write(this->fd, "HTTP/1.1 100 CONTINUE\n", 22);
+		}
+		else
+		{
+			body += request;
+			request.clear();
+		}
+	}
+	if (!header.empty() && body.size() == this->body_size && !multipart)
+	{
+		done_read = true;
+		//std::cout << "Finished reading" << std::endl;
+		this->setMethod();
+		//std::cout << method << std::endl;
+		//std::cout << "done reading" << std::endl;
+		//std::cout << "HEADER" << std::endl;
+		//std::cout << this->header << std::endl;
+		//std::cout << "BODY" << std::endl;
+		//std::cout << this->body << std::endl;
+	}
+	else if (!header.empty() && multipart && request_end)
+	{
+		done_read = true;
+		this->setMethod();
+		std::cout << "Finished reading" << std::endl;
+	}
+	return ;
+} */
 
 void Request::readRequest(std::vector<class Server> servers)
 {
@@ -339,6 +478,10 @@ void Request::formErrorResponse(int error_code)
 			if (error_file.empty())
 				error_file = "./example_resources/def/413";
 			break;
+		case 500:
+			response = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: ";
+			if (error_file.empty())
+				error_file = "./example_resources/def/500";
 	}
 	//std::cout << "Error file: " << error_file << std::endl;
 	std::string resp = fileToStr(error_file.c_str());
@@ -557,7 +700,7 @@ void Request::createPostFile(std::string name)
 	}
 	complete_path = complete_path_ext;
 	std::cout << "new file: " << complete_path << std::endl;
-	std::cout << "body: " << body << std::endl;
+	//std::cout << "body: " << body << std::endl;
 	std::ofstream new_file;
 	new_file.open(complete_path);
 	new_file << body;
@@ -666,11 +809,15 @@ void Request::executeCGI(std::string type)
 			{
 				hex = var_val[1].substr(j + 1, 2);
 				c = hexToDec(hex);
+				//std::cout << "hex: " << hex << " -> char: " << c << "-> int: " << (int)c << std::endl;
 				value.push_back(c);
 				j += 2;
 			}
 			else
+			{
+				//std::cout << "char: " << var_val[1][j] << " -> int: " << (int)var_val[1][j] << std::endl;
 				value.push_back(var_val[1][j]);
+			}
 		}
 		values.push_back(value);
 	}
@@ -693,10 +840,60 @@ void Request::executeCGI(std::string type)
 		i++; 
 	}
 
+	int pipe_fd[2];
+	if (pipe(pipe_fd))
+	{
+		formErrorResponse(500);
+		return ;
+	}
 
+	int status;
+	int childpid = fork();
+	if (childpid < 0)
+	{
+		formErrorResponse(500);
+		return ;
+	}
+	else if (childpid == 0)
+	{
+		dup2(pipe_fd[1], STDOUT_FILENO);
+		execve(args[0], args, NULL);
+		//error reponse
+	}
+	else
+	{
+		//add time loop
+		/* std::time_t start = std::time(nullptr);
+		std::time_t current = start;
+		while (current - start < 30)
+			current = std::time(nullptr); */
 
-
-	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 3\r\n\r\nCGI";
+		waitpid(childpid, &status, 0);
+		close(pipe_fd[1]);
+		if (!WIFEXITED(status))
+		{
+			formErrorResponse(500);
+			return ;
+		}
+		else
+		{
+			std::cout << "Waiting for child process" << std::endl;
+			char buff[101];
+			int r;
+			std::string output_cgi;
+			while ((r = read(pipe_fd[0],buff, 100)))
+			{
+				buff[r] = 0;
+				output_cgi += std::string(buff);
+				for (int i = 0; i < 101; i++)
+					buff[i] = 0;
+			}
+			std::cout << "OUTPUT: " << output_cgi << std::endl;
+			response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
+			return ;
+		}
+	}
+	//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 3\r\n\r\nCGI";
 	return ;
 }
 
@@ -723,10 +920,7 @@ void Request::formResponse()
 	if (loc_index >= 0 && !server.getLocations()[loc_index].getRedirpath().empty())
 	{
 		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getLocations()[loc_index].getRedirpath());
-		//request_file_path = std::string(".") + request_file;
-		//std::cout << request_file_path << std::endl;
 		std::cout << request_file << std::endl;
-		//std::cout << request_file_path << std::endl;
 		if (server.getLocations()[loc_index].getRedircode() == "307")
 			response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
 		else if (server.getLocations()[loc_index].getRedircode() == "303")
@@ -755,33 +949,6 @@ void Request::formResponse()
 		// }
 		return ;
 	}
-	// else if (!server.getRedirpath().empty())
-	// {
-	// 	request_file.replace(0, , server.getRedirpath());
-	// 	//request_file_path = std::string(".") + request_file;
-	// 	std::cout << request_file_path << std::endl;
-	// 	response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
-	// 	/* if (access(request_file.c_str(), F_OK))
-	// 	{
-	// 		if (method == "POST")
-	// 			response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length:11\r\n\r\nbad request";
-	// 		else
-	// 			response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file + std::string("\r\n\r\n");
-	// 	}
-	// 	else
-	// 	{
-	// 		if (method == "GET" || method == "DELETE")
-	// 			response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
-	// 		else
-	// 		{
-	// 			if (access(request_file.substr(0, request_file.rfind("/")).c_str(), F_OK))
-	// 				response = std::string("HTTP/1.1 307 Temporary Redirect\r\nContent-Length: 0\r\nLocation: ") + request_file.substr(0, request_file.rfind("/")) + std::string("\r\n\r\n");
-	// 			else
-	// 				response = "HTTP/1.1 404 Not Found\r\nContent-Type: text/html\r\nContent-Length: 9\r\n\r\nnot found";
-	// 		}
-	// 	} */
-	// 	return ;
-	// }
 	else if (loc_index >= 0 && !server.getLocations()[loc_index].getRoot().empty())
 	{
 		request_file.replace(0, server.getLocations()[loc_index].getLocation().size(), server.getLocations()[loc_index].getRoot());
@@ -789,7 +956,6 @@ void Request::formResponse()
 	}
 	else
 		request_file_path = std::string(".") + server.getRoot() + request_file;
-	// //std::cout << request_file_path << std::endl;
 	std::string meths[3] = {"GET", "POST", "DELETE"};
 	int i = 0;
 	for (; i < 3; i++)
