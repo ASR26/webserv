@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/19 09:02:53 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/19 13:06:05 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Request
 		int loc_index;
 
 		std::string query_string;
+		static std::map<std::string, std::string> file_types;
 	public:
 		Request();
 		Request(int fd);
@@ -76,5 +77,8 @@ class Request
 		void setResponse(std::string);
 		void formErrorResponse(int);
 		void executeCGI(std::string type);
+
+		static std::map<std::string, std::string> initializeFileTypes();
+
 };
 #endif

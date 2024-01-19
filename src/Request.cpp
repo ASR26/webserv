@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/19 09:15:21 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/19 14:29:15 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
+
 
 Request::Request(): fd(-1), body_size(0), request(""), header(""), body(""), method(""), \
 response(""), done_read(false), done_write(false)
@@ -409,6 +411,12 @@ void Request::formErrorResponse(int error_code)
 			response = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: ";
 			if (error_file.empty())
 				error_file = "./example_resources/def/500";
+		case 2:
+			response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ");
+			if (error_file.empty())
+				error_file = "./example_resources/def/delete";
+		default:
+			std::cout << "This server does not support error " << error_code << std::endl;
 	}
 	//std::cout << "Error file: " << error_file << std::endl;
 	std::string resp = fileToStr(error_file.c_str());
@@ -467,9 +475,11 @@ void Request::executeGetRequest()
 		int i = content.size();
 		std::ostringstream s;
 		s << i;
-		std::string content_len(s.str());	
-
-		response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
+		std::string content_len(s.str());
+		if (Request::file_types.find(request_file_path.substr(request_file_path.rfind("."), std::string::npos)) != Request::file_types.end())
+			response = std::string("HTTP/1.1 200 OK\r\nContent-Type: " + Request::file_types.find(request_file_path.substr(request_file_path.rfind("."), std::string::npos))->second + "\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
+		else
+			response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ") + content_len + std::string("\r\n\r\n") + content;
 	}
 	else
 	{
@@ -788,6 +798,7 @@ void Request::executeCGI(std::string type)
 	else if (childpid == 0)
 	{
 		dup2(pipe_fd[1], STDOUT_FILENO);
+		dup2(pipe_fd[1], STDERR_FILENO);
 		execve(args[0], args, NULL);
 		//error reponse
 	}
@@ -819,6 +830,7 @@ void Request::executeCGI(std::string type)
 				for (int i = 0; i < 101; i++)
 					buff[i] = 0;
 			}
+			close(pipe_fd[0]);
 			std::cout << "OUTPUT: " << output_cgi << std::endl;
 			if (output_cgi.find("<!DOCTYPE html>") != std::string::npos)
 				response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
@@ -974,3 +986,18 @@ void Request::setResponse(std::string res)
 {
 	this->response = res;
 }
+
+std::map<std::string, std::string> Request::initializeFileTypes()
+{
+	std::map<std::string, std::string> files;
+	files[".png"] = "image/png";
+	files[".jpeg"] = "image/jpeg";
+	files[".html"] = "text/html";
+	files[".pdf"] = "application/pdf";
+	files[".php"] = "application/x-httpd-php";
+	files[".txt"] = "text/plain";
+	files[".gif"] = "image/gif";
+	return files ;
+}
+
+std::map<std::string, std::string> Request::file_types = initializeFileTypes();
