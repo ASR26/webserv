@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/18 12:21:09 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/19 09:15:21 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ method(""), response(""), done_read(false), done_write(false)
 }
 
 Request::Request(const Request& req): fd(req.fd), body_size(req.body_size), header(req.header), \
-body(req.body), method(req.method), response(req.response), host(req.host), done_read(req.done_read), \
+body(req.body), body_raw(req.body_raw), method(req.method), response(req.response), host(req.host), done_read(req.done_read), \
 done_write(req.done_write)
 {
 	//std::cout << "Created a copy request fd: " << this->fd << std::endl;
@@ -82,6 +82,7 @@ Request& Request::operator=(const Request& req)
 		this->done_read = req.done_read;
 		this->done_write = req.done_write;
 		this->host = req.host;
+		this->body_raw = req.body_raw;
 	}
 	return *this;
 }
@@ -159,7 +160,7 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 	
 }
 
-/* void Request::readRequest(std::vector<class Server> servers)
+void Request::readRequest(std::vector<class Server> servers)
 {
 	int r;
 	char buf[10001];
@@ -173,7 +174,7 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 		return ;
 	}
 	buf[r] = 0;
-	//std::cout << "chars: " << r << std::endl;
+	std::cout << "chars: " << r << std::endl;
 	//std::cout << "READ: " << buf << std::endl;
 	request += std::string(buf);
 	//std::cout << "entering" << std::endl;
@@ -190,6 +191,7 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 		if ((pos = header.find("Content-Length: ")) != std::string::npos)
 		{
 			this->body_size = std::atoi(header.substr(pos + std::strlen("Content-Length: "), header.substr(pos, std::string::npos).find("\n") - (pos + std::strlen("Content-Length: "))).c_str());
+			std::cout << "CONTENT LENGTH: " << body_size << std::endl;
 			try
 			{
 				Server srv = returnServerOfRequest(servers);
@@ -239,7 +241,7 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 		}
 		else
 			multipart = false;
-		if (request.size() > header.size() + 4)
+		if ((unsigned int)r > header.size() + 4)
 		{
 			if (multipart)
 			{
@@ -250,7 +252,11 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 				}
 			}
 			else
+			{
 				body = request.substr(header.size() + 4, std::string::npos);
+				for (int i = (int)header.size() + 4; i < r; i++)
+					body_raw.push_back(buf[i]);
+			}
 			//std::cout << "body: " << this->body << std::endl;
 		}
 		request.clear();
@@ -273,14 +279,17 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 		}
 		else
 		{
+			std::cout << "Adding to body: " << request.size() << " -> " << body.size() << std::endl;
 			body += request;
+			for (int i = 0; i < r; i++)
+				body_raw.push_back(buf[i]);
 			request.clear();
 		}
 	}
-	if (!header.empty() && body.size() == this->body_size && !multipart)
+	if (!header.empty() && (body.size() == this->body_size || body_raw.size() == this->body_size) && !multipart)
 	{
 		done_read = true;
-		//std::cout << "Finished reading" << std::endl;
+		std::cout << "Finished reading" << std::endl;
 		this->setMethod();
 		//std::cout << method << std::endl;
 		//std::cout << "done reading" << std::endl;
@@ -294,88 +303,6 @@ Server Request::returnServerOfRequest(std::vector<class Server> servers)
 		done_read = true;
 		this->setMethod();
 		std::cout << "Finished reading" << std::endl;
-	}
-	return ;
-} */
-
-void Request::readRequest(std::vector<class Server> servers)
-{
-	int r;
-	char buf[10001];
-	unsigned long pos;
-
-	r = read(this->fd, buf, 10000);
-	if (r <= 0)
-	{
-		//for -1 write error/send error code?
-		return ;
-	}
-	buf[r] = 0;
-	std::cout << "chars: " << r << std::endl;
-	std::cout << "READ: " << buf << std::endl;
-	request += std::string(buf);
-	if (header.empty() && (pos = request.find("\r\n\r\n")) != std::string::npos)
-	{
-		this->header = request.substr(0, pos);
-		//std::cout << this->header << std::endl;
-		if ((pos = header.find("Content-Length: ")) != std::string::npos)
-		{
-			this->body_size = std::atoi(header.substr(pos + std::strlen("Content-Length: "), header.substr(pos, std::string::npos).find("\n") - (pos + std::strlen("Content-Length: "))).c_str());
-			try
-			{
-				Server srv = returnServerOfRequest(servers);
-				unsigned long pos_space = header.substr(header.find(" ") + 1, std::string::npos).find(" ");
-				std::string file = header.substr(header.find(" ") + 1, pos_space);
-				int index_for_location = returnLocationIndex(file, srv);
-				if (index_for_location >= 0)
-				{
-					if (this->body_size > (unsigned int)srv.getLocations()[index_for_location].getCSize())
-					{
-						done_read = true;
-						//response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
-						formErrorResponse(413);
-						return ;
-					}
-				}
-				else
-				{
-					if (this->body_size > (unsigned int)srv.getCSize())
-					{
-						done_read = true;
-						//response = "HTTP/1.1 413 Payload Too Large\r\nContent-Type: text/html\r\nContent-Length: 0\r\n\r\n";
-						formErrorResponse(413);
-						return ;
-					}
-				}
-			}
-			catch(const std::exception& e)
-			{
-			}
-			
-			//std::cout << this->body_size << std::endl;
-		}
-		if (request.size() > header.size() + 4)
-		{
-			body = request.substr(header.size() + 4, std::string::npos);
-			//std::cout << "body: " << this->body << std::endl;
-		}
-		request.clear();
-	}
-	else if (!header.empty())
-	{
-		body += request;
-		request.clear();
-	}
-	if (!header.empty() && body.size() == this->body_size)
-	{
-		done_read = true;
-		this->setMethod();
-		//std::cout << method << std::endl;
-		//std::cout << "done reading" << std::endl;
-		//std::cout << "HEADER" << std::endl;
-		//std::cout << this->header << std::endl;
-		//std::cout << "BODY" << std::endl;
-		//std::cout << this->body << std::endl;
 	}
 	return ;
 }
@@ -703,8 +630,12 @@ void Request::createPostFile(std::string name)
 	//std::cout << "body: " << body << std::endl;
 	std::ofstream new_file;
 	new_file.open(complete_path);
-	new_file << body;
-	response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nLocation: " + complete_path + "\r\n\r\n";
+	for (unsigned int i = 0; i < body_raw.size(); i++)
+	{
+		new_file << body_raw[i];
+	}
+	//new_file << body;
+	response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nLocation: " + complete_path + "\r\n\r\n";
 	return ;
 }
 
@@ -889,7 +820,10 @@ void Request::executeCGI(std::string type)
 					buff[i] = 0;
 			}
 			std::cout << "OUTPUT: " << output_cgi << std::endl;
-			response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
+			if (output_cgi.find("<!DOCTYPE html>") != std::string::npos)
+				response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
+			else
+				response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
 			return ;
 		}
 	}

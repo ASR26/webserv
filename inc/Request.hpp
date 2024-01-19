@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/18 12:19:56 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/19 09:02:53 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,13 @@ class Request
 		size_t body_size;
 		std::string boundary;
 		std::string boundary_end;
-		//bool multipart;
+		bool multipart;
 		std::string content_type;
 		std::string request;
 		std::string header;
 		std::string body;
+		std::vector<char> body_raw;
+		//int body_raw_size;
 		std::string method;
 		std::string response;
 		std::string original_request;
