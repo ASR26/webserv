@@ -118,7 +118,10 @@ Server::Server(std::string conf)
 			while (std::atoi(&conf[n]))
 			{
 				std::string s;
-				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j, i - j));
+				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j + 1, i - j - 1));
+				s = error[std::atoi(&conf[n])];
+				if (s[0] != '/')
+					throw std::exception();
 				//n += 1 + std::to_string(std::atoi(&conf[n])).length();//to_str es c++ 11!!!!!!!!!!!!!!!!!!!
 				s = intToStr(std::atoi(&conf[n]));
 				n += 1 + s.size();// esto NO es c++11, devuelve lo mismo que la línea comentada (debería estar bien)
