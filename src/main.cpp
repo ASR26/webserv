@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/09 14:32:48 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/22 12:03:10 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,21 +17,18 @@ int main(int argc, char **argv)
 	(void)argv;
 	if (argc > 2)
 	{
-		std::cout << "Error" << std::endl;
+		std::cerr << "Error: Too many arguments." << std::endl;
 		std::exit (EXIT_FAILURE);
 	}
 	try
 	{
-		/*if (argc == 2)
-			getConfig(argv[1]);
-		else
-			Server();*/
 		WebServer mywebserver = WebServer();
-		//ServerConfiguration servconf = ServerConfiguration();
-		mywebserver.addServer(argv[1]);
+		if (argc == 2)
+			mywebserver.addServer(argv[1]);
+		else
+			mywebserver.addServer("./conf/peps.conf");
 		mywebserver.checkServerSpecification();
 		mywebserver.configureServer();
-		//mywebserver.addTestServer();
 		mywebserver.runWebserv();
 	}
 	catch(const std::exception& e)

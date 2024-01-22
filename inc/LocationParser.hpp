@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:17:28 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/09 11:55:09 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/12 10:40:29 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ class LocationParser
 		void		getInfo(void);
 		size_t		getMethodsSize() const;
 		void		setMethods(std::vector<std::string>);
-		std::string getLocation() const;
+		std::string getLocation();
 		std::string	getCGI() const;
 		bool 		isAllowedMethod(std::string meth);
 		std::string getRoot() const;
@@ -49,6 +49,8 @@ class LocationParser
 		std::string getUpload() const;
 		std::vector<std::string> getMethods() const;
 		int getCSize() const;
+		void completeRoot(std::string server_root);
+		std::map<int, std::string> &getError();
 };
 
 #endif

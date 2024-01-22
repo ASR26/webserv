@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/08 15:50:40 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/19 13:06:05 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,25 @@
 # define REQUEST_HPP
 
 # include <string>
+# include "Server.hpp"
 
 class Request
 {
 	private:
 		int fd;
 		size_t body_size;
+		std::string boundary;
+		std::string boundary_end;
+		bool multipart;
+		std::string content_type;
 		std::string request;
 		std::string header;
 		std::string body;
+		std::vector<char> body_raw;
+		//int body_raw_size;
 		std::string method;
 		std::string response;
+		std::string original_request;
 		void setMethod();
 
 		class Server server;
@@ -35,6 +43,7 @@ class Request
 		int loc_index;
 
 		std::string query_string;
+		static std::map<std::string, std::string> file_types;
 	public:
 		Request();
 		Request(int fd);
@@ -44,12 +53,14 @@ class Request
 		bool done_read;
 		bool done_write;
 		Request& operator=(const Request& req);
-		void readRequest();
+		Server returnServerOfRequest(std::vector<class Server> servers);
+		int returnLocationIndex(std::string file, Server srv);
+		void readRequest(std::vector<class Server> servers);
 		void sendResponse();
 		void formResponse();
-		void responseGet();
-		void responsePost();
-		void responseDelete();
+		//void responseGet();
+		//void responsePost();
+		//void responseDelete();
 		void selectLocation();
 		bool isAllowedMethod();
 		void createPostFile(std::string);
@@ -64,5 +75,10 @@ class Request
 		void setHost(std::string);
 		std::string getHost() const;
 		void setResponse(std::string);
+		void formErrorResponse(int);
+		void executeCGI(std::string type);
+
+		static std::map<std::string, std::string> initializeFileTypes();
+
 };
 #endif

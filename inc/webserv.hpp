@@ -55,7 +55,7 @@
 #include <fstream>
 #include <sstream>
 #include <utility>
-
+#include <ctime>
 
 #include "Server.hpp"
 #include "LocationParser.hpp"
@@ -74,4 +74,6 @@ std::string trimSpaces(std::string str);
 int	intLen(const int n);
 std::string intToStr(const int n);
 std::string fileToStr(std::string file);
+int	hexToDec(std::string num);
+
 #endif

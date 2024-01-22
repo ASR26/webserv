@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationParser.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/09 11:55:58 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/22 12:06:50 by gromero-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,9 +82,9 @@ LocationParser::LocationParser(std::string conf)
 		n = conf.find("\n", n + 1);
 		root = trimSpaces(conf.substr(i, n - i));
 		if (root[root.length() - 1] == '/')
-			throw std::exception();
+			throw std::runtime_error("Error: Wrong configuration file");
 		else if (root[0] != '/')
-			throw std::exception();
+			throw std::runtime_error("Error: Wrong configuration file");
 		conf.erase(i - 5, n - i + 5);
 	}
 
@@ -136,6 +136,10 @@ LocationParser::LocationParser(std::string conf)
 	else
 	{
 		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n) - (n + 7)));
+		if (upload[upload.length() - 1] == '/')
+			throw std::runtime_error("Error: Wrong configuration file");
+		else if (upload[0] != '/')
+			throw std::runtime_error("Error: Wrong configuration file");
 		conf.erase(n, conf.find("\n", n) - n);
 	}
 
@@ -169,7 +173,7 @@ LocationParser::LocationParser(std::string conf)
 		while (n != std::string::npos)
 		{
 			i = n;
-			while (conf[i] != ';')
+			while (conf[i] != '\n')
 				i++;
 			j = i;
 			while (conf[j] != ' ')
@@ -178,7 +182,7 @@ LocationParser::LocationParser(std::string conf)
 				n++;
 			while (std::atoi(&conf[n]))
 			{
-				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j, i - j));
+				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j + 1, i - j - 1));
 				n += 1 + std::to_string(std::atoi(&conf[n])).length();
 			}
 			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
@@ -188,7 +192,7 @@ LocationParser::LocationParser(std::string conf)
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t')
-			throw std::runtime_error("Error: 4");
+			throw std::runtime_error("Error: Wrong configuration file");
 	//getInfo();
 }
 
@@ -214,6 +218,13 @@ LocationParser &LocationParser::operator=(const LocationParser& loc)
 		this->error = loc.error;
 	}
 	return (*this);
+}
+
+void LocationParser::completeRoot(std::string server_root)
+{
+	std::string tmp = root;
+	root = server_root + tmp;
+	return ;
 }
 
 void	LocationParser::getInfo(void)
@@ -258,7 +269,7 @@ std::string	LocationParser::getCGI() const
 	return (cgi_pass);
 }
 
-std::string LocationParser::getLocation() const
+std::string LocationParser::getLocation()
 {
 	return this->location;
 }
@@ -308,4 +319,9 @@ std::string LocationParser::getUpload() const
 int LocationParser::getCSize() const
 {
 	return this->c_size;
+}
+
+std::map<int, std::string> &LocationParser::getError()
+{
+	return this->error;
 }

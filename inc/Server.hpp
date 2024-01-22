@@ -46,7 +46,7 @@ class	Server
 		void openServerSocket();
 		std::vector<std::string> getPortVec() const;
 		std::vector<std::string> getServerNames() const;
-		std::vector<LocationParser> getLocations() const;
+		std::vector<LocationParser> &getLocations();
 		std::string getRoot() const;
 		bool isAllowedMethod(std::string);
 		std::string getRedirpath() const;
@@ -58,6 +58,8 @@ class	Server
 		std::string getPort() const;
 		std::string getUpload() const;
 		int getCSize() const;
+		std::map<int, std::string> &getError();
+		std::map<std::string, std::string> &getCGI();
 };
 
 #endif

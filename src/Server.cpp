@@ -33,9 +33,7 @@ Server::Server(std::string conf)
 
 	conf.erase(0, 6);
 	n = conf.find("location");
-	if (n == std::string::npos)
-		throw std::runtime_error("Error: 1");//porque exception cuando no hay location?
-	else
+	if (n != std::string::npos)
 	{
 		while (n != std::string::npos)
 		{
@@ -101,10 +99,10 @@ Server::Server(std::string conf)
 	}
 
 	n = conf.find("error_page");
-	if (n == std::string::npos)
-		error[404] = "default_location";//no hace falta
-	else
-	{
+	//if (n == std::string::npos)
+	//	error[404] = "default_location";//no hace falta
+	//else
+	//{
 		while (n != std::string::npos)
 		{
 			i = n;
@@ -121,7 +119,7 @@ Server::Server(std::string conf)
 				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j + 1, i - j - 1));
 				s = error[std::atoi(&conf[n])];
 				if (s[0] != '/')
-					throw std::exception();
+					throw std::runtime_error("Error: Wrong configuration file");
 				//n += 1 + std::to_string(std::atoi(&conf[n])).length();//to_str es c++ 11!!!!!!!!!!!!!!!!!!!
 				s = intToStr(std::atoi(&conf[n]));
 				n += 1 + s.size();// esto NO es c++11, devuelve lo mismo que la línea comentada (debería estar bien)
@@ -129,7 +127,7 @@ Server::Server(std::string conf)
 			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
 			n = conf.find("error_page", n);
 		}
-	}
+	//}
 
 	n = conf.find("client_max_body_size");
 	if (n == std::string::npos)
@@ -210,9 +208,9 @@ Server::Server(std::string conf)
 		n = conf.find("\n", n + 1);
 		root = trimSpaces(conf.substr(i, n - i));
 		if (root[root.length() - 1] == '/')
-			throw std::runtime_error("Error: 2");
+			throw std::runtime_error("Error: Wrong configuration file");
 		else if (root[0] != '/')
-			throw std::exception();
+			throw std::runtime_error("Error: Wrong configuration file");
 		conf.erase(conf.find("root"), conf.find("\n", conf.find("root")) - conf.find("root"));
 	}
 
@@ -223,14 +221,14 @@ Server::Server(std::string conf)
 	{
 		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n + 1) - n - 7));
 		if (upload[0] != '/')
-			throw std::exception();
+			throw std::runtime_error("Error: Wrong configuration file");
 		conf.erase(conf.find("upload"), conf.find("\n", conf.find("upload")) - conf.find("upload"));
 	}
 
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
-			throw std::runtime_error("Error: 3");
+			throw std::runtime_error("Error: Wrong configuration file");;
 	
 	getInfo();
 
@@ -416,7 +414,7 @@ std::vector<std::string> Server::getServerNames() const
 	return this->s_name;
 }
 
-std::vector<LocationParser> Server::getLocations() const
+std::vector<LocationParser> &Server::getLocations()
 {
 	return this->location;
 }
@@ -476,4 +474,14 @@ std::string Server::getUpload() const
 int Server::getCSize() const
 {
 	return this->c_size;
+}
+
+std::map<int, std::string> &Server::getError()
+{
+	return this->error;
+}
+
+std::map<std::string, std::string> &Server::getCGI()
+{
+	return this->cgi;
 }
