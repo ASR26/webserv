@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/11 11:51:06 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/22 08:22:03 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void WebServer::addServer(std::string conf)
 
 	n = conf.find(".conf");
 	if (std::string::npos == n)
-		throw std::exception();
+		throw std::runtime_error("Error: Configuration file must be a .conf file");
 	fd.open (conf, std::fstream::in);
 	if (fd.is_open())
 		while (std::getline(fd, str))
@@ -55,14 +55,14 @@ void WebServer::addServer(std::string conf)
 			file.push_back('\n');
 		}
 	else
-		throw std::exception();
+		throw std::runtime_error("Error: Configuration file could not be opened.");
 	n = file.find("server");
 	while (n != std::string::npos)
 	{
 		int	i = n + 5;
 		while (file[++i] && file[i] != '{')
 			if (file[i] != ' ' && file[i] != '\t')
-				throw std::exception();
+				throw std::runtime_error("Error: Invalid configuration file.");
 		i = n;
 		while (file[i] && file[i] != '{')
 			i++;
@@ -90,12 +90,12 @@ void WebServer::checkServerSpecification()
 			full_root = "." + servers[i].getRoot();
 			if (access(full_root.c_str(), F_OK))
 			{
-				throw std::runtime_error("Error: non existent root " + full_root);
+				throw std::runtime_error("Error: Non existent root " + full_root);
 			}
 			stat(full_root.c_str(), &buf);
 			if (!S_ISDIR(buf.st_mode))
 			{
-				throw std::runtime_error("Error: root not a directory");
+				throw std::runtime_error("Error: Root not a directory");
 			}
 		}
 		if (!servers[i].getUpload().empty())
@@ -103,12 +103,12 @@ void WebServer::checkServerSpecification()
 			full_upload = "." + servers[i].getRoot() + servers[i].getUpload();
 			if (access(full_upload.c_str(), F_OK))
 			{
-				throw std::runtime_error("Error: non existent upload " + full_upload);
+				throw std::runtime_error("Error: Non existent upload " + full_upload);
 			}
 			stat(full_upload.c_str(), &buf);
 			if (!S_ISDIR(buf.st_mode))
 			{
-				throw std::runtime_error("Error: upload not a directory");
+				throw std::runtime_error("Error: Upload not a directory");
 			}
 		}
 		for (unsigned int j = 0; j < servers[i].getLocations().size(); j++)
@@ -119,12 +119,12 @@ void WebServer::checkServerSpecification()
 				full_root = "." + servers[i].getLocations()[j].getRoot();
 				if (access(full_root.c_str(), F_OK))
 				{
-					throw std::runtime_error("Error: non existent root " + full_root);
+					throw std::runtime_error("Error: Non existent root " + full_root);
 				}
 				stat(full_root.c_str(), &buf);
 				if (!S_ISDIR(buf.st_mode))
 				{
-					throw std::runtime_error("Error: root not a directory");
+					throw std::runtime_error("Error: Root not a directory");
 				}
 			}
 			if (!servers[i].getLocations()[j].getUpload().empty())
@@ -132,19 +132,19 @@ void WebServer::checkServerSpecification()
 				full_upload = "." + servers[i].getLocations()[j].getRoot() + servers[i].getLocations()[j].getUpload();
 				if (access(full_upload.c_str(), F_OK))
 				{
-					throw std::runtime_error("Error: non existent upload " + full_upload);
+					throw std::runtime_error("Error: Non existent upload " + full_upload);
 				}
 				stat(full_upload.c_str(), &buf);
 				if (!S_ISDIR(buf.st_mode))
 				{
-					throw std::runtime_error("Error: upload not a directory");
+					throw std::runtime_error("Error: Upload not a directory");
 				}
 			}
 			if (!servers[i].getLocations()[j].getRedirpath().empty())
 			{
 				if (servers[i].getLocations()[j].getRedircode() != "301" && servers[i].getLocations()[j].getRedircode() != "303" && servers[i].getLocations()[j].getRedircode() != "307")
 				{
-					throw std::runtime_error("Error: invalid return code");
+					throw std::runtime_error("Error: Invalid return code");
 				}
 			}
 		}

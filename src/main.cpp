@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/10 09:29:50 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/22 08:06:17 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 	(void)argv;
 	if (argc > 2)
 	{
-		std::cout << "Error" << std::endl;
+		std::cerr << "Error: Too many arguments." << std::endl;
 		std::exit (EXIT_FAILURE);
 	}
 	try

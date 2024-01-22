@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ServerConfiguration.cpp                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:17:57 by ysmeding          #+#    #+#             */
-/*   Updated: 2023/12/12 15:55:59 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/19 14:35:33 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/webserv.hpp"
 
-ServerConfiguration::ServerConfiguration()
+/* ServerConfiguration::ServerConfiguration()
 {
 	struct addrinfo default_addrinfo;
 	struct addrinfo *returned_sockaddr;
@@ -34,12 +34,12 @@ ServerConfiguration::ServerConfiguration()
 	}
 	std::cout << "returned_sockaddr has " << i << " node(s)" << std::endl;
 
-	/* struct sockaddr_in sockaddr_conf;
+	// struct sockaddr_in sockaddr_conf;
 
-	memset(&sockaddr_conf, 0, sizeof(struct sockaddr_in));
-	sockaddr_conf.sin_family = AF_INET;
-	sockaddr_conf.sin_port = htons(8080);
-	sockaddr_conf.sin_addr.s_addr = inet_addr("0.0.0.0"); */
+	// memset(&sockaddr_conf, 0, sizeof(struct sockaddr_in));
+	// sockaddr_conf.sin_family = AF_INET;
+	// sockaddr_conf.sin_port = htons(8080);
+	// sockaddr_conf.sin_addr.s_addr = inet_addr("0.0.0.0");
 
 	if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 	{
@@ -57,12 +57,12 @@ ServerConfiguration::ServerConfiguration()
 	//freeaddrinfo(returned_sockaddr);
 	//std::cout << "So far so good..." << std::endl;
 	return ;
-}
+} */
 
-ServerConfiguration::~ServerConfiguration()
+/* ServerConfiguration::~ServerConfiguration()
 {
 	return ;
-}
+} */
 /*
 int ServerConfiguration::getServerSocket() const
 {
