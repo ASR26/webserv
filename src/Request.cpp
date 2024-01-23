@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/19 14:29:15 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/23 09:39:12 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -411,12 +411,15 @@ void Request::formErrorResponse(int error_code)
 			response = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: ";
 			if (error_file.empty())
 				error_file = "./example_resources/def/500";
+			break;
 		case 2:
 			response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ");
 			if (error_file.empty())
 				error_file = "./example_resources/def/delete";
+			break;
 		default:
 			std::cout << "This server does not support error " << error_code << std::endl;
+			break;
 	}
 	//std::cout << "Error file: " << error_file << std::endl;
 	std::string resp = fileToStr(error_file.c_str());
@@ -789,7 +792,7 @@ void Request::executeCGI(std::string type)
 	}
 
 	int status;
-	int childpid = fork();
+	int childpid = fork(); 
 	if (childpid < 0)
 	{
 		formErrorResponse(500);
@@ -797,6 +800,10 @@ void Request::executeCGI(std::string type)
 	}
 	else if (childpid == 0)
 	{
+		std::time_t start = std::time(nullptr);
+		std::time_t current = start;
+		while (current - start < 1)
+			current = std::time(nullptr);
 		dup2(pipe_fd[1], STDOUT_FILENO);
 		dup2(pipe_fd[1], STDERR_FILENO);
 		execve(args[0], args, NULL);
@@ -805,13 +812,21 @@ void Request::executeCGI(std::string type)
 	else
 	{
 		//add time loop
-		/* std::time_t start = std::time(nullptr);
-		std::time_t current = start;
-		while (current - start < 30)
-			current = std::time(nullptr); */
-
-		waitpid(childpid, &status, 0);
+		std::time_t start = std::time(nullptr);
+		std::time_t current = start;			
+		std::cout << "Before: " << kill(childpid, 0) << std::endl;
+		while (!waitpid(childpid, &status, WNOHANG) && current - start < 10)
+		{
+			current = std::time(nullptr);
+		}
+		std::cout << "After: " << kill(childpid, 0) << std::endl;
 		close(pipe_fd[1]);
+		if (kill(childpid, 0) == 0)
+		{
+			kill(childpid, SIGTERM);
+			formErrorResponse(500);
+			return ;
+		}
 		if (!WIFEXITED(status))
 		{
 			formErrorResponse(500);
@@ -820,23 +835,34 @@ void Request::executeCGI(std::string type)
 		else
 		{
 			std::cout << "Waiting for child process" << std::endl;
-			char buff[101];
-			int r;
-			std::string output_cgi;
-			while ((r = read(pipe_fd[0],buff, 100)))
+			if (WEXITSTATUS(status) == 0)
 			{
-				buff[r] = 0;
-				output_cgi += std::string(buff);
-				for (int i = 0; i < 101; i++)
-					buff[i] = 0;
+				char buff[101];
+				int r;
+				std::string output_cgi;
+				while ((r = read(pipe_fd[0],buff, 100)))
+				{
+					buff[r] = 0;
+					output_cgi += std::string(buff);
+					for (int i = 0; i < 101; i++)
+						buff[i] = 0;
+				}
+				close(pipe_fd[0]);
+				std::cout << "OUTPUT: " << output_cgi << std::endl;
+				if (output_cgi.find("<!DOCTYPE html>") != std::string::npos)
+					response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
+				else
+					response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
+				return ;
 			}
-			close(pipe_fd[0]);
-			std::cout << "OUTPUT: " << output_cgi << std::endl;
-			if (output_cgi.find("<!DOCTYPE html>") != std::string::npos)
-				response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
 			else
-				response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: " + intToStr(output_cgi.size()) + "\r\n\r\n" + output_cgi;
-			return ;
+			{
+				close(pipe_fd[0]);
+				std::cout << "Status: " << WEXITSTATUS(status) << std::endl;
+				formErrorResponse(500);
+				return ;
+			}
+			
 		}
 	}
 	//response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 3\r\n\r\nCGI";

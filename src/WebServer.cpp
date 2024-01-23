@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/22 08:22:03 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/23 11:14:12 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -191,7 +191,18 @@ void WebServer::configureServer()
 		}
 		else
 		{
-			servers[i].openServerSocket();
+			try
+			{
+				servers[i].openServerSocket();
+			}
+			catch(const std::exception& e)
+			{
+				for (std::map<std::string, int>::iterator its = port_sock.begin(); its != port_sock.end(); its++)
+				{
+					close(its->second);
+				}
+				throw std::runtime_error(e.what());
+			}
 			port_sock[servers[i].getPort()] = servers[i].getServerSocket();
 		}
 	}
