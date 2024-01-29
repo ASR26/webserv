@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/23 09:39:12 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/26 13:32:01 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,9 +57,9 @@ method(""), response(""), done_read(false), done_write(false)
 	std::cout << method << std::endl; */
 }
 
-Request::Request(const Request& req): fd(req.fd), body_size(req.body_size), header(req.header), \
-body(req.body), body_raw(req.body_raw), method(req.method), response(req.response), host(req.host), done_read(req.done_read), \
-done_write(req.done_write)
+Request::Request(const Request& req): fd(req.fd), body_size(req.body_size), content_type(req.content_type), request(req.request), header(req.header), \
+body(req.body), body_raw(req.body_raw), method(req.method), response(req.response), original_request(req.original_request), server(req.server), host(req.host), \
+request_file(req.request_file), request_file_path(req.request_file_path), loc_index(req.loc_index), query_string(req.query_string), done_read(req.done_read), done_write(req.done_write)
 {
 	//std::cout << "Created a copy request fd: " << this->fd << std::endl;
 	return ;
@@ -77,14 +77,22 @@ Request& Request::operator=(const Request& req)
 	{
 		this->fd = req.fd;
 		this->body_size = req.body_size;
+		this->content_type = req.content_type;
+		this->request = req.request;
 		this->header = req.header;
 		this->body = req.body;
 		this->method = req.method;
 		this->response = req.response;
+		this->original_request = req.original_request;
+		this->server = req.server;
+		this->request_file = req.request_file;
+		this->request_file_path = req.request_file_path;
+		this->loc_index = req.loc_index;
 		this->done_read = req.done_read;
 		this->done_write = req.done_write;
 		this->host = req.host;
 		this->body_raw = req.body_raw;
+		this->query_string = req.query_string;
 	}
 	return *this;
 }
@@ -167,7 +175,7 @@ void Request::readRequest(std::vector<class Server> servers)
 	int r;
 	char buf[10001];
 	unsigned long pos;
-	bool request_end = false;
+	//bool request_end = false;
 
 	r = read(this->fd, buf, 10000);
 	if (r <= 0)
@@ -176,7 +184,7 @@ void Request::readRequest(std::vector<class Server> servers)
 		return ;
 	}
 	buf[r] = 0;
-	std::cout << "chars: " << r << std::endl;
+	//std::cout << "chars: " << r << std::endl;
 	//std::cout << "READ: " << buf << std::endl;
 	request += std::string(buf);
 	//std::cout << "entering" << std::endl;
@@ -193,7 +201,7 @@ void Request::readRequest(std::vector<class Server> servers)
 		if ((pos = header.find("Content-Length: ")) != std::string::npos)
 		{
 			this->body_size = std::atoi(header.substr(pos + std::strlen("Content-Length: "), header.substr(pos, std::string::npos).find("\n") - (pos + std::strlen("Content-Length: "))).c_str());
-			std::cout << "CONTENT LENGTH: " << body_size << std::endl;
+			//std::cout << "CONTENT LENGTH: " << body_size << std::endl;
 			try
 			{
 				Server srv = returnServerOfRequest(servers);
@@ -229,7 +237,7 @@ void Request::readRequest(std::vector<class Server> servers)
 		{
 			write(this->fd, "HTTP/1.1 100 CONTINUE\n", 22);
 		}
-		if (header.find("Content-Type: multipart/form-data") != std::string::npos)
+		/* if (header.find("Content-Type: multipart/form-data") != std::string::npos)
 		{
 			int begin = header.find("boundary=");
 			int end = header.substr(begin + 9, header.size() - begin - 9).find("\n");
@@ -242,10 +250,10 @@ void Request::readRequest(std::vector<class Server> servers)
 			multipart = true;
 		}
 		else
-			multipart = false;
+			multipart = false; */
 		if ((unsigned int)r > header.size() + 4)
 		{
-			if (multipart)
+			/* if (multipart)
 			{
 				body = request.substr(header.size() + 4, std::string::npos);
 				if (body.find(boundary))
@@ -254,18 +262,18 @@ void Request::readRequest(std::vector<class Server> servers)
 				}
 			}
 			else
-			{
+			{ */
 				body = request.substr(header.size() + 4, std::string::npos);
 				for (int i = (int)header.size() + 4; i < r; i++)
 					body_raw.push_back(buf[i]);
-			}
+			/* } */
 			//std::cout << "body: " << this->body << std::endl;
 		}
 		request.clear();
 	}
 	else if (!header.empty())
 	{
-		if (multipart)
+		/* if (multipart)
 		{
 			//std::cout << "reading multipart" << std::endl;
 			std::cout << "REQUEST: " << request << std::endl;
@@ -280,32 +288,32 @@ void Request::readRequest(std::vector<class Server> servers)
 			//write(this->fd, "HTTP/1.1 100 CONTINUE\n", 22);
 		}
 		else
-		{
-			std::cout << "Adding to body: " << request.size() << " -> " << body.size() << std::endl;
+		{ */
+			//std::cout << "Adding to body: " << request.size() << " -> " << body.size() << std::endl;
 			body += request;
 			for (int i = 0; i < r; i++)
 				body_raw.push_back(buf[i]);
 			request.clear();
-		}
+		/* } */
 	}
-	if (!header.empty() && (body.size() == this->body_size || body_raw.size() == this->body_size) && !multipart)
+	if (!header.empty() && (body.size() == this->body_size || body_raw.size() == this->body_size))
 	{
 		done_read = true;
-		std::cout << "Finished reading" << std::endl;
+		//std::cout << "Finished reading" << std::endl;
 		this->setMethod();
 		//std::cout << method << std::endl;
 		//std::cout << "done reading" << std::endl;
-		//std::cout << "HEADER" << std::endl;
-		//std::cout << this->header << std::endl;
-		//std::cout << "BODY" << std::endl;
-		//std::cout << this->body << std::endl;
+		std::cout << "HEADER" << std::endl;
+		std::cout << this->header << std::endl;
+		std::cout << "BODY" << std::endl;
+		std::cout << this->body << std::endl;
 	}
-	else if (!header.empty() && multipart && request_end)
+	/* else if (!header.empty() && multipart && request_end)
 	{
 		done_read = true;
 		this->setMethod();
 		std::cout << "Finished reading" << std::endl;
-	}
+	} */
 	return ;
 }
 
@@ -387,6 +395,11 @@ void Request::formErrorResponse(int error_code)
 	}
 	switch (error_code)
 	{
+		case 400:
+			response = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length: ";
+			if (error_file.empty())
+				error_file = "./example_resources/def/400";
+			break;
 		case 403:
 			response = "HTTP/1.1 403 Forbidden\r\nContent-Type: text/html\r\nContent-Length: ";
 			if (error_file.empty())
@@ -433,8 +446,8 @@ void Request::executeGetRequest()
 	{
 		query_string = request_file_path.substr(request_file_path.find("?") + 1, std::string::npos);
 		request_file_path = request_file_path.substr(0, request_file_path.find("?"));
-		std::cout << query_string << std::endl;
-		std::cout << request_file_path << std::endl;
+		//std::cout << query_string << std::endl;
+		//std::cout << request_file_path << std::endl;
 		//separate query string
 	}
 	if (access(request_file_path.c_str(), F_OK))
@@ -495,7 +508,7 @@ void Request::executeGetRequest()
 		{
 			index_path_file = "." + server.getRoot() + "/" + server.getIndex();
 		}
-		std::cout << index_path_file << std::endl;
+		//std::cout << index_path_file << std::endl;
 		if (access(index_path_file.c_str(), F_OK))
 		{
 			if ((loc_index >= 0 && server.getLocations()[loc_index].getAutoIndex()) || (loc_index < 0 && server.getAutoIndex()))
@@ -514,13 +527,13 @@ void Request::executeGetRequest()
 				}
 				struct dirent *dir_entry;
 				dir_entry = readdir(dir_fd);
-				std::cout << "<a href=\"" + original_request + "\">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+				//std::cout << "<a href=\"" + original_request + "\">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
 				list_file += "<a href=\"" + original_request + "\">" + std::string(dir_entry->d_name) + "</a></br>";
 				dir_entry = readdir(dir_fd);
 				std::string prev = original_request.substr(0, original_request.substr(0, original_request.size() - 1).rfind("/"));
 				if (prev.empty())
 					prev = "/";
-				std::cout << "<a href=\"" + prev + "\">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+				//std::cout << "<a href=\"" + prev + "\">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
 				list_file += "<a href=\"" + prev + "\">" + std::string(dir_entry->d_name) + "</a></br>";
 				while ((dir_entry = readdir(dir_fd)) != NULL)
 				{
@@ -529,7 +542,7 @@ void Request::executeGetRequest()
 					if (request_file_path.back() != '/')
 						request_file_path += "/";
 					list_file += "<a href=" + std::string("\"") + original_request + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>";
-					std::cout << "<a href=" + std::string("\"") + original_request + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
+					//std::cout << "<a href=" + std::string("\"") + original_request + std::string(dir_entry->d_name) + std::string("\"") + ">" + std::string(dir_entry->d_name) + "</a></br>" << std::endl;
 				}
 				closedir(dir_fd);
 				list_file += "</body></html>";
@@ -815,7 +828,7 @@ void Request::executeCGI(std::string type)
 		std::time_t start = std::time(nullptr);
 		std::time_t current = start;			
 		std::cout << "Before: " << kill(childpid, 0) << std::endl;
-		while (!waitpid(childpid, &status, WNOHANG) && current - start < 10)
+		while (!waitpid(childpid, &status, WNOHANG) && current - start < 20)
 		{
 			current = std::time(nullptr);
 		}
@@ -954,11 +967,18 @@ void Request::sendResponse()
 
 	if (this->response.empty())
 		this->formResponse();
+	//std::cerr << "RESPONSE" << std::endl << this->response << std::endl;
 	w = write(this->fd, this->response.c_str(), this->response.size());
 	if (w <= 0)
 	{
-		//put some error thing for -1
+		throw std::runtime_error("Error: write");
+		done_write = true;
 		return ;
+	}
+	else
+	{
+		std::cerr << count << ": wrote " << w << " chars in " << this->fd << std::endl;
+		count++;
 	}
 	if (response.size() < (size_t)w)
 		response = response.substr(w, std::string::npos);
@@ -966,6 +986,7 @@ void Request::sendResponse()
 		response = "";
 	if (response.empty())
 	{
+		std::cerr << "done writing" << std::endl;
 		done_write = true;
 	}
 }
@@ -1027,3 +1048,4 @@ std::map<std::string, std::string> Request::initializeFileTypes()
 }
 
 std::map<std::string, std::string> Request::file_types = initializeFileTypes();
+int Request::count = 0;

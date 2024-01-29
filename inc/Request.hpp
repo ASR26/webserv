@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/19 13:06:05 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/26 13:21:11 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,9 @@ class Request
 	private:
 		int fd;
 		size_t body_size;
-		std::string boundary;
-		std::string boundary_end;
-		bool multipart;
+		//std::string boundary;
+		//std::string boundary_end;
+		//bool multipart;
 		std::string content_type;
 		std::string request;
 		std::string header;
@@ -79,6 +79,7 @@ class Request
 		void executeCGI(std::string type);
 
 		static std::map<std::string, std::string> initializeFileTypes();
+		static int count;
 
 };
 #endif

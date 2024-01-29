@@ -230,7 +230,7 @@ Server::Server(std::string conf)
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
 			throw std::runtime_error("Error: Wrong configuration file");;
 	
-	getInfo();
+	//getInfo();
 
 	/*memset(&default_addrinfo, 0, sizeof(struct addrinfo));
 	default_addrinfo.ai_family = AF_INET;
@@ -389,6 +389,17 @@ void Server::openServerSocket()
 	{
 		throw std::runtime_error("Error: socket");
 	}
+	else
+	{
+		std::cout << "server socket: " << serverSocket << std::endl;
+		//fcntl(serverSocket, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
+		int option_val = 1;
+		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1 || setsockopt(serverSocket, SOL_SOCKET, SO_REUSEPORT, &option_val, sizeof(option_val)))
+		{
+			throw std::runtime_error("Error: socket option");
+		}
+		
+	}
 	//setsockopt
 	
 	if (bind(serverSocket, returned_sockaddr->ai_addr, returned_sockaddr->ai_addrlen) == -1)
@@ -399,7 +410,7 @@ void Server::openServerSocket()
 	{
 		throw std::runtime_error("Error: listen");
 	}
-	//freeaddrinfo(returned_sockaddr);
+	freeaddrinfo(returned_sockaddr);
 	//std::cout << "So far so good..." << std::endl;
 	return ;
 }
@@ -484,4 +495,9 @@ std::map<int, std::string> &Server::getError()
 std::map<std::string, std::string> &Server::getCGI()
 {
 	return this->cgi;
+}
+
+std::vector<std::string> &Server::getSName()
+{
+	return this->s_name;
 }

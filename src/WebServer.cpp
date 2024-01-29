@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/23 11:14:12 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/26 13:42:44 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,24 @@
 WebServer::WebServer()
 {
 	return ;
+}
+
+WebServer::WebServer(const WebServer& webser): servers(webser.servers), acceptedaddrinfo(webser.acceptedaddrinfo), serverSocket_acc(webser.serverSocket_acc), acceptedaddrinfo_size(webser.acceptedaddrinfo_size), requestQueue(webser.requestQueue)
+{
+	return ;
+}
+
+WebServer &WebServer::operator=(const WebServer & webser)
+{
+	if (this != &webser)
+	{
+		this->servers = webser.servers;
+		this->acceptedaddrinfo = webser.acceptedaddrinfo;
+		this->serverSocket_acc = webser.serverSocket_acc;
+		this->acceptedaddrinfo_size = webser.acceptedaddrinfo_size;
+		this->requestQueue = webser.requestQueue;
+	}
+	return *this;
 }
 
 WebServer::~WebServer()
@@ -219,6 +237,11 @@ void WebServer::assignServerToRequest(class Request &req)
 	unsigned long pos_end = header.substr(pos_start, std::string::npos).find("\r\n");
 	req.setHost(header.substr(pos_start + std::strlen("Host: "), pos_end - std::strlen("Host: ")));
 	//this->host = header.substr(pos_start + std::strlen("Host: "), pos_end - std::strlen("Host: "));
+	if (req.getHost().find(":") == std::string::npos)
+	{
+		req.formErrorResponse(400);
+		return ;
+	}
 	std::string port = req.getHost().substr(req.getHost().find(":") + 1, std::string::npos);
 	for (unsigned long i = 0; i < servers.size(); i++)
 	{
@@ -277,11 +300,92 @@ void WebServer::assignServerToRequest(class Request &req)
 		}
 		if (found == 0)
 		{
-			req.setResponse("HTTP/1.1 400 Bad Request\r\nContent-Type: text/html\r\nContent-Length: 11\r\n\r\nbad request");//change to error400.html
+			req.formErrorResponse(400);
 		}
 	}
 	
 }
+
+/* void WebServer::assignServerToRequest(class Request &req)
+{
+	std::vector<int> index;
+	std::string server_name;
+	std::string header = req.getHeader();
+	unsigned long pos_start = header.find("Host: ");
+	unsigned long pos_end = header.substr(pos_start, std::string::npos).find("\r\n");
+	req.setHost(header.substr(pos_start + std::strlen("Host: "), pos_end - std::strlen("Host: ")));
+	if (req.getHost().find(":") == std::string::npos)
+	{
+		if (req.getHost().find(".") == std::string::npos)
+			server_name = req.getHost();
+		else
+		{
+			pos_end = req.getHost().find(".");
+			if (pos_end != std::string::npos)
+				server_name = req.getHost().substr(0, pos_end);
+		}
+		for (unsigned long i = 0; i < servers.size(); i++)
+		{
+			if (std::find(servers[i].getSName().begin(), servers[i].getSName().end(), server_name) != servers[i].getSName().end())
+			{
+				req.setServer(servers[i]);
+				return ;
+			}
+		}
+		req.formErrorResponse(400);
+		return ;
+	}
+	std::string port = req.getHost().substr(req.getHost().find(":") + 1, std::string::npos);
+	for (unsigned long i = 0; i < servers.size(); i++)
+	{
+		if (port == servers[i].getPort())
+			index.push_back(i);
+	}
+	pos_end = req.getHost().rfind(":");
+	if (!std::isdigit(req.getHost()[pos_end - 1]))
+	{
+		pos_end = req.getHost().find(".localhost");
+		if (pos_end != std::string::npos)
+			server_name = req.getHost().substr(0, pos_end);
+		else
+			server_name = "";
+	}
+	else
+	{
+		int n = 1;
+		int point_count = 0;
+		while (pos_end - n >= 0 && (std::isdigit(req.getHost()[pos_end - n]) || req.getHost()[pos_end - n] == '.') && point_count < 4)
+		{
+			if (req.getHost()[pos_end - n] == '.')
+				point_count++;
+			n++;
+		}
+		if (pos_end - n < 0)
+			server_name = "";
+		else
+			server_name = req.getHost().substr(0, pos_end - n);
+	}
+	if (server_name.empty())
+		req.setServer(servers[index[0]]);
+	else
+	{
+		int found = 0;
+		for (unsigned long i = 0; i < index.size(); i++)
+		{
+			for (unsigned long j = 0; j < servers[index[i]].getServerNames().size(); j++)
+			{
+				if (servers[index[i]].getServerNames()[j] == server_name)
+				{
+					req.setServer(servers[index[i]]);
+					found = 1;
+				}
+			}
+		}
+		if (found == 0)
+			req.formErrorResponse(400);
+	}
+	
+} */
 
 bool WebServer::isServerSocket(int fd)
 {
@@ -302,7 +406,7 @@ void WebServer::runWebserv()
 	struct kevent finished_event;
 	int events;
 	int kq = kqueue();
-	
+	std::cout << "kqueue: " << kq << std::endl;
 	if (kq == -1)
 	{
 		std::cout << std::strerror(errno) << std::endl;
@@ -315,8 +419,8 @@ void WebServer::runWebserv()
 	{
 		EV_SET(&new_event, servers[i].getServerSocket(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
 		k = kevent(kq, &new_event, 1, NULL, 0, NULL);
-		/*if (k == -1)
-			Error::functionError();*/
+		if (k == -1)
+			throw std::runtime_error("Error: kevent could not add server socket to queue");
 	}
 	acceptedaddrinfo_size = sizeof(struct sockaddr_storage);
 	while (1)
@@ -329,57 +433,72 @@ void WebServer::runWebserv()
 		if (finished_event.flags == EV_EOF)
 		{
 			//std::cout << std::endl << "closing connection" << std::endl;
-			close(finished_event.ident);
+			if (close(finished_event.ident) == -1)
+				throw std::runtime_error("Error: close");
 		}
 		else if (isServerSocket(finished_event.ident))
 		{
 			//std::cout << std::endl << "accept connection" << std::endl;
 			if ((serverSocket_acc = accept(finished_event.ident, (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
-				Error::functionError();
-			fcntl(serverSocket_acc, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
+				throw std::runtime_error("Error: server did not accept client socket");
+			std::cout << "client socket: " << serverSocket_acc << std::endl;
+			//fcntl(serverSocket_acc, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
+			int option_val = 1;
+			if (setsockopt(serverSocket_acc, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1)
+			{
+				throw std::runtime_error("Error: socket option");
+			}
 			EV_SET(&new_event, serverSocket_acc, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-			kevent(kq, &new_event, 1, NULL, 0, NULL);
+			k = kevent(kq, &new_event, 1, NULL, 0, NULL);
+			if (k == -1)
+				throw std::runtime_error("Error: kevent could not add client socket to queue");
 		}
 		else if (finished_event.filter == EVFILT_READ)
 		{
-			//std::cout << std::endl << "receiving request" << std::endl;
+			std::cout << std::endl << "receiving request from " << finished_event.ident << std::endl;
 			if (!existRequest(finished_event.ident))
 				this->addRequest(finished_event.ident);
+			std::cout << "requestQueue size after adding: " << requestQueue.size() << std::endl;
 			requestQueue.find(finished_event.ident)->second.readRequest(this->servers);
 			if (requestQueue.find(finished_event.ident)->second.done_read)
 			{
 				assignServerToRequest(requestQueue.find(finished_event.ident)->second);
 				EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
-				kevent(kq, &new_event, 1, NULL, 0, NULL);
-				EV_SET(&finished_event, serverSocket_acc,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
-				kevent(kq, &finished_event, 1, NULL, 0, NULL);
+				k = kevent(kq, &new_event, 1, NULL, 0, NULL);
+				if (k == -1)
+					throw std::runtime_error("Error: kevent could not disable client socket read");
+				std::cout << std::endl << "finished receiving request from " << finished_event.ident << std::endl;
+				EV_SET(&finished_event, finished_event.ident,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
+				k = kevent(kq, &finished_event, 1, NULL, 0, NULL);
+				if (k == -1)
+					throw std::runtime_error("Error: kevent could not add and enable client socket write");
 			}
 		}
 		else if (finished_event.filter == EVFILT_WRITE)
 		{
-			//std::cout << std::endl << "sending response" << std::endl;
+			std::cout << std::endl << "sending response to " << finished_event.ident << std::endl;
 			
 			requestQueue.find(finished_event.ident)->second.sendResponse();
 			if (requestQueue.find(finished_event.ident)->second.done_write)
 			{
 				requestQueue.erase(requestQueue.find(finished_event.ident));
+				std::cout << "requestQueue size after erasing: " << requestQueue.size() << std::endl;
 				EV_SET(&finished_event, finished_event.ident,  EVFILT_READ, EV_DELETE, 0, 0, NULL);
-				kevent(kq, &finished_event, 1, NULL, 0, NULL);
+				k = kevent(kq, &finished_event, 1, NULL, 0, NULL);
+				if (k == -1)
+					throw std::runtime_error("Error: kevent could not delete client socket read");
 				EV_SET(&finished_event, finished_event.ident,  EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-				kevent(kq, &finished_event, 1, NULL, 0, NULL);
-				close(finished_event.ident);
+				k = kevent(kq, &finished_event, 1, NULL, 0, NULL);
+				if (k == -1)
+					throw std::runtime_error("Error: kevent could not delete client socket write");
+				std::cout << "closing: " << finished_event.ident << std::endl;
+				if (close(finished_event.ident) == -1)
+					throw std::runtime_error("Error: close");
+				//std::cout << std::endl << "end of exchange" << std::endl;
 			}
 		}
 	}
 }
-
-
-/* int fd = open("tab.html", O_RDONLY);
-char buff2[10000];
-r = read(fd, buff2, 10000);
-close(fd);
-write(finished_event.ident, "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n", strlen( "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 449\r\n\r\n"));
-write(finished_event.ident, buff2, r); */
 
 
 void WebServer::addTestServer()

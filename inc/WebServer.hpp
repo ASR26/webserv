@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:13:01 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/09 14:09:03 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/26 13:44:58 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ class WebServer
 		std::map<int, class Request> requestQueue;
 	public:
 		WebServer();
+		WebServer(const WebServer &);
+		WebServer& operator=(const WebServer &);
 		~WebServer();
 
 		void addServer(std::string);

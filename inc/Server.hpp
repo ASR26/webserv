@@ -60,6 +60,7 @@ class	Server
 		int getCSize() const;
 		std::map<int, std::string> &getError();
 		std::map<std::string, std::string> &getCGI();
+		std::vector<std::string> &getSName();
 };
 
 #endif

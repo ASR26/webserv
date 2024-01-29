@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   LocationParser.cpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/22 12:06:50 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/01/26 13:33:00 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,25 @@ LocationParser::LocationParser(const LocationParser& loc)
 	this->redirec = loc.redirec;
 	this->cgi_pass = loc.cgi_pass;
 	this->error = loc.error;
+}
+
+
+LocationParser &LocationParser::operator=(const LocationParser& loc)
+{
+	if (this != &loc)
+	{
+		this->location = loc.location;
+		this->methods = loc.methods;
+		this->root = loc.root;
+		this->c_size = loc.c_size;
+		this->auto_index = loc.auto_index;
+		this->upload = loc.upload;
+		this->index = loc.index;
+		this->redirec = loc.redirec;
+		this->cgi_pass = loc.cgi_pass;
+		this->error = loc.error;
+	}
+	return (*this);
 }
 
 LocationParser::LocationParser(std::string conf)
@@ -199,25 +218,6 @@ LocationParser::LocationParser(std::string conf)
 LocationParser::~LocationParser()
 {
 
-}
-
-
-LocationParser &LocationParser::operator=(const LocationParser& loc)
-{
-	if (this != &loc)
-	{
-		this->location = loc.location;
-		this->methods = loc.methods;
-		this->root = loc.root;
-		this->c_size = loc.c_size;
-		this->auto_index = loc.auto_index;
-		this->upload = loc.upload;
-		this->index = loc.index;
-		this->redirec = loc.redirec;
-		this->cgi_pass = loc.cgi_pass;
-		this->error = loc.error;
-	}
-	return (*this);
 }
 
 void LocationParser::completeRoot(std::string server_root)
