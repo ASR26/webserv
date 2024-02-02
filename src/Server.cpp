@@ -385,23 +385,43 @@ void Server::openServerSocket()
 		throw std::runtime_error("Error: getaddrinfo");
 	}
 	
-	if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
+	/* sockaddr_in socketAddr;
+	socklen_t socketAddrSize = sizeof(socketAddr);
+
+	memset(&socketAddr, 0, socketAddrSize);
+	socketAddr.sin_family = AF_INET;
+	socketAddr.sin_port = htons(std::atoi(port[0].c_str()));
+	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); */
+
+
+	if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		throw std::runtime_error("Error: socket");
 	}
 	else
 	{
 		std::cout << "server socket: " << serverSocket << std::endl;
-		//fcntl(serverSocket, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
 		int option_val = 1;
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1 || setsockopt(serverSocket, SOL_SOCKET, SO_REUSEPORT, &option_val, sizeof(option_val)))
 		{
 			throw std::runtime_error("Error: socket option");
 		}
+		fcntl(serverSocket, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
 		
 	}
 	//setsockopt
 	
+	/* if (bind(serverSocket, (sockaddr *)&socketAddr, socketAddrSize) == -1)
+	{
+		throw std::runtime_error(strerror(errno));
+	}
+	if (listen(serverSocket, 10) == -1)
+	{
+		throw std::runtime_error("Error: listen");
+	} */
+	//freeaddrinfo(returned_sockaddr);
+
+
 	if (bind(serverSocket, returned_sockaddr->ai_addr, returned_sockaddr->ai_addrlen) == -1)
 	{
 		throw std::runtime_error(strerror(errno));
@@ -410,7 +430,7 @@ void Server::openServerSocket()
 	{
 		throw std::runtime_error("Error: listen");
 	}
-	freeaddrinfo(returned_sockaddr);
+	//freeaddrinfo(returned_sockaddr);
 	//std::cout << "So far so good..." << std::endl;
 	return ;
 }

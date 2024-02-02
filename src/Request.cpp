@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/26 13:32:01 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/02 07:24:07 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,17 @@
 
 
 Request::Request(): fd(-1), body_size(0), request(""), header(""), body(""), method(""), \
-response(""), done_read(false), done_write(false)
+response(""), done_read(false), done_write(false), error(false)
 {
-	//std::cout << "Created an empty request fd: " << this->fd << std::endl;
+	std::cout << "Created an empty request fd: " << this->fd << std::endl;
 	return ;
 }
 
 Request::Request(int fd_r): fd(fd_r), body_size(0), request(""), header(""), body(""), \
-method(""), response(""), done_read(false), done_write(false)
+method(""), response(""), done_read(false), done_write(false), error(false)
 {
 	this->fd = fd_r;
-	//std::cout << "Created a request fd: " << this->fd << std::endl;
+	std::cout << "Created a request fd: " << this->fd << std::endl;
 	/* char buff[101];
 	int r;
 	int pos;
@@ -59,15 +59,15 @@ method(""), response(""), done_read(false), done_write(false)
 
 Request::Request(const Request& req): fd(req.fd), body_size(req.body_size), content_type(req.content_type), request(req.request), header(req.header), \
 body(req.body), body_raw(req.body_raw), method(req.method), response(req.response), original_request(req.original_request), server(req.server), host(req.host), \
-request_file(req.request_file), request_file_path(req.request_file_path), loc_index(req.loc_index), query_string(req.query_string), done_read(req.done_read), done_write(req.done_write)
+request_file(req.request_file), request_file_path(req.request_file_path), loc_index(req.loc_index), query_string(req.query_string), done_read(req.done_read), done_write(req.done_write), error(false)
 {
-	//std::cout << "Created a copy request fd: " << this->fd << std::endl;
+	std::cout << "Created a copy request fd: " << this->fd << std::endl;
 	return ;
 }
 
 Request::~Request()
 {
-	//std::cout << "destructing request for fd: " << this->fd << std::endl;
+	std::cout << "destructing request for fd: " << this->fd << std::endl;
 	return ;
 }
 
@@ -93,6 +93,7 @@ Request& Request::operator=(const Request& req)
 		this->host = req.host;
 		this->body_raw = req.body_raw;
 		this->query_string = req.query_string;
+		this->error = req.error;
 	}
 	return *this;
 }
@@ -178,13 +179,15 @@ void Request::readRequest(std::vector<class Server> servers)
 	//bool request_end = false;
 
 	r = read(this->fd, buf, 10000);
-	if (r <= 0)
+	if (r < 0)
 	{
-		//for -1 write error/send error code?
+		error = true;
 		return ;
 	}
+	//if (r == 0)
+		//throw std::runtime_error("Error: reading request returned 0");
 	buf[r] = 0;
-	//std::cout << "chars: " << r << std::endl;
+	std::cout << "chars: " << r << std::endl;
 	//std::cout << "READ: " << buf << std::endl;
 	request += std::string(buf);
 	//std::cout << "entering" << std::endl;
@@ -969,12 +972,13 @@ void Request::sendResponse()
 		this->formResponse();
 	//std::cerr << "RESPONSE" << std::endl << this->response << std::endl;
 	w = write(this->fd, this->response.c_str(), this->response.size());
-	if (w <= 0)
+	if (w < 0)
 	{
-		throw std::runtime_error("Error: write");
-		done_write = true;
+		error = true;
 		return ;
 	}
+	//else if (w == 0)
+		//throw std::runtime_error("Error: write response returned 0");
 	else
 	{
 		std::cerr << count << ": wrote " << w << " chars in " << this->fd << std::endl;

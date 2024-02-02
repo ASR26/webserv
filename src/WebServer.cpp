@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/26 13:42:44 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/02 07:26:05 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,10 @@ WebServer::WebServer()
 	return ;
 }
 
-WebServer::WebServer(const WebServer& webser): servers(webser.servers), acceptedaddrinfo(webser.acceptedaddrinfo), serverSocket_acc(webser.serverSocket_acc), acceptedaddrinfo_size(webser.acceptedaddrinfo_size), requestQueue(webser.requestQueue)
+WebServer::WebServer(const WebServer& webser): servers(webser.servers), acceptedaddrinfo(webser.acceptedaddrinfo),\
+serverSocket_acc(webser.serverSocket_acc), acceptedaddrinfo_size(webser.acceptedaddrinfo_size), \
+requestQueue(webser.requestQueue), socketCount(webser.socketCount), eventCount(webser.eventCount),\
+finishedEvents(webser.finishedEvents)
 {
 	return ;
 }
@@ -31,6 +34,9 @@ WebServer &WebServer::operator=(const WebServer & webser)
 		this->serverSocket_acc = webser.serverSocket_acc;
 		this->acceptedaddrinfo_size = webser.acceptedaddrinfo_size;
 		this->requestQueue = webser.requestQueue;
+		this->socketCount = webser.socketCount;
+		this->eventCount = webser.eventCount;
+		this->finishedEvents = webser.finishedEvents;
 	}
 	return *this;
 }
@@ -212,6 +218,7 @@ void WebServer::configureServer()
 			try
 			{
 				servers[i].openServerSocket();
+				serverSocketFD.push_back(servers[i].getServerSocket());
 			}
 			catch(const std::exception& e)
 			{
@@ -397,109 +404,122 @@ bool WebServer::isServerSocket(int fd)
 	return false;
 }
 
+void WebServer::acceptConnection(int fd)
+{
+	if ((serverSocket_acc = accept(fd, NULL, NULL)) == -1)
+		throw std::runtime_error("Error: server did not accept client socket");
+	std::cout << "client socket: " << serverSocket_acc << std::endl;
+	int option_val = 1;
+	if (setsockopt(serverSocket_acc, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1)
+	{
+		throw std::runtime_error("Error: socket option");
+	}
+	fcntl(serverSocket_acc, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
+	int i = 0;
+	while (sockets[i].fd >= 0)
+		i++;
+	sockets[i].fd = serverSocket_acc;
+	sockets[i].events = POLLIN;
+	eventCount++;
+	socketCount++;
+	if (socketCount == 1000)
+	{
+		throw std::runtime_error("Too many requests...");
+	}
+}
+
+void WebServer::readFromSocket(int fd, int i)
+{
+	std::cout << std::endl << "receiving request from " << fd << std::endl;
+	if (!existRequest(fd))
+	{
+		//std::cout << "NEW RQUEST ADDED TO QUEUE" << std::endl;
+		this->addRequest(fd);
+	}
+	std::cout << "requestQueue size after adding: " << requestQueue.size() << std::endl;
+	requestQueue.find(fd)->second.readRequest(this->servers);
+	if (requestQueue.find(fd)->second.error)
+	{
+		throw std::runtime_error("Error: reading from client socket");
+	}
+	if (requestQueue.find(fd)->second.done_read)
+	{
+		assignServerToRequest(requestQueue.find(fd)->second);
+		sockets[i].events = POLLOUT;
+	}
+	eventCount++;
+}
+
+void WebServer::writeToSocket(int fd, int i)
+{
+	requestQueue.find(fd)->second.sendResponse();
+	if (requestQueue.find(fd)->second.error)
+	{
+		throw std::runtime_error("Error: writing to socket");
+	}
+	if (requestQueue.find(fd)->second.done_write)
+	{
+		requestQueue.erase(requestQueue.find(fd));
+		sockets[i].fd = -1;
+		sockets[i].events = POLLOUT;
+		sockets[i].revents = 0;
+		if (close(fd) == -1)
+			throw std::runtime_error("Error: close");
+		//std::cout << std::endl << "end of exchange" << std::endl;
+		socketCount--;
+	}
+	eventCount++;
+}
+
 void WebServer::runWebserv()
 {
-	//int c;
-	int k;
-	//int r;
-	struct kevent new_event;
-	struct kevent finished_event;
-	int events;
-	int kq = kqueue();
-	std::cout << "kqueue: " << kq << std::endl;
-	if (kq == -1)
-	{
-		std::cout << std::strerror(errno) << std::endl;
-		//throw std::runtime_error("Error: kqueue"); 
-	}
+	int i = 0;
+	socketCount = 0;
+	eventCount = 0;
+	finishedEvents = 0;
 
-	/* Do this in for loop for all servers */
-	//std::cout << servers.size() << std::endl;
-	for (int i = 0; i < (int)servers.size(); i++)
+	for (int j = 0; j < 1000; j++)
 	{
-		EV_SET(&new_event, servers[i].getServerSocket(), EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
-		k = kevent(kq, &new_event, 1, NULL, 0, NULL);
-		if (k == -1)
-			throw std::runtime_error("Error: kevent could not add server socket to queue");
-	}
-	acceptedaddrinfo_size = sizeof(struct sockaddr_storage);
+		sockets[j].fd = -1;
+		sockets[j].events = 0;
+		sockets[j].revents = 0;
+ 	}
+	for (int j = 0; j < (int)serverSocketFD.size(); j++)
+ 	{
+ 		sockets[j].fd = serverSocketFD[j];
+		sockets[j].events = POLLIN;
+		socketCount++; 
+ 	}
 	while (1)
 	{
-		events = kevent(kq, NULL, 0, &finished_event, 1, NULL);
-		/*if (events == -1)
-			Error::functionError();*/
-		if (events == 0)
+		finishedEvents = poll(sockets, socketCount, 10);
+		if (finishedEvents < 0)
+			throw std::runtime_error("Error: poll");
+		else if (finishedEvents == 0)
 			continue;
-		if (finished_event.flags == EV_EOF)
+		else
 		{
-			//std::cout << std::endl << "closing connection" << std::endl;
-			if (close(finished_event.ident) == -1)
-				throw std::runtime_error("Error: close");
-		}
-		else if (isServerSocket(finished_event.ident))
-		{
-			//std::cout << std::endl << "accept connection" << std::endl;
-			if ((serverSocket_acc = accept(finished_event.ident, (struct sockaddr *)&acceptedaddrinfo, &acceptedaddrinfo_size)) == -1)
-				throw std::runtime_error("Error: server did not accept client socket");
-			std::cout << "client socket: " << serverSocket_acc << std::endl;
-			//fcntl(serverSocket_acc, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
-			int option_val = 1;
-			if (setsockopt(serverSocket_acc, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1)
+			eventCount = 0;
+			i = 0;
+			while (i < 1000 && eventCount < finishedEvents)
 			{
-				throw std::runtime_error("Error: socket option");
-			}
-			EV_SET(&new_event, serverSocket_acc, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-			k = kevent(kq, &new_event, 1, NULL, 0, NULL);
-			if (k == -1)
-				throw std::runtime_error("Error: kevent could not add client socket to queue");
-		}
-		else if (finished_event.filter == EVFILT_READ)
-		{
-			std::cout << std::endl << "receiving request from " << finished_event.ident << std::endl;
-			if (!existRequest(finished_event.ident))
-				this->addRequest(finished_event.ident);
-			std::cout << "requestQueue size after adding: " << requestQueue.size() << std::endl;
-			requestQueue.find(finished_event.ident)->second.readRequest(this->servers);
-			if (requestQueue.find(finished_event.ident)->second.done_read)
-			{
-				assignServerToRequest(requestQueue.find(finished_event.ident)->second);
-				EV_SET(&new_event, finished_event.ident, EVFILT_READ, EV_DISABLE, 0, 0, NULL);
-				k = kevent(kq, &new_event, 1, NULL, 0, NULL);
-				if (k == -1)
-					throw std::runtime_error("Error: kevent could not disable client socket read");
-				std::cout << std::endl << "finished receiving request from " << finished_event.ident << std::endl;
-				EV_SET(&finished_event, finished_event.ident,  EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
-				k = kevent(kq, &finished_event, 1, NULL, 0, NULL);
-				if (k == -1)
-					throw std::runtime_error("Error: kevent could not add and enable client socket write");
-			}
-		}
-		else if (finished_event.filter == EVFILT_WRITE)
-		{
-			std::cout << std::endl << "sending response to " << finished_event.ident << std::endl;
-			
-			requestQueue.find(finished_event.ident)->second.sendResponse();
-			if (requestQueue.find(finished_event.ident)->second.done_write)
-			{
-				requestQueue.erase(requestQueue.find(finished_event.ident));
-				std::cout << "requestQueue size after erasing: " << requestQueue.size() << std::endl;
-				EV_SET(&finished_event, finished_event.ident,  EVFILT_READ, EV_DELETE, 0, 0, NULL);
-				k = kevent(kq, &finished_event, 1, NULL, 0, NULL);
-				if (k == -1)
-					throw std::runtime_error("Error: kevent could not delete client socket read");
-				EV_SET(&finished_event, finished_event.ident,  EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-				k = kevent(kq, &finished_event, 1, NULL, 0, NULL);
-				if (k == -1)
-					throw std::runtime_error("Error: kevent could not delete client socket write");
-				std::cout << "closing: " << finished_event.ident << std::endl;
-				if (close(finished_event.ident) == -1)
-					throw std::runtime_error("Error: close");
-				//std::cout << std::endl << "end of exchange" << std::endl;
+				if (sockets[i].fd >= 0 && isServerSocket(sockets[i].fd) && sockets[i].revents == POLLIN)
+				{
+					acceptConnection(sockets[i].fd);
+				}
+				else if (sockets[i].fd >= 0 && sockets[i].revents == POLLIN)
+				{
+					readFromSocket(sockets[i].fd, i);
+				}
+				else if (sockets[i].fd >= 0 && sockets[i].revents == POLLOUT)
+				{
+					writeToSocket(sockets[i].fd, i);
+				}
+				i++;
 			}
 		}
 	}
 }
-
 
 void WebServer::addTestServer()
 {

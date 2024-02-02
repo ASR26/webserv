@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+         #
+#    By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/16 14:13:39 by gromero-          #+#    #+#              #
-#    Updated: 2024/01/08 12:41:51 by gromero-         ###   ########.fr        #
+#    Updated: 2024/01/29 12:35:18 by ysmeding         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,15 +19,15 @@ OBJ_SRC		=	 $(SRC:.cpp=.o)
 
 EXEC		=	webserv
 
-CC			=	c++  -std=c++98
-CPPFLAGS	=	-Wall -Werror -Wextra
+CC			=	c++
+CPPFLAGS	=	-std=c++98 -Wall -Werror -Wextra 
 
 all:		$(EXEC)
 
 $(NAME):	all
 
 $(EXEC):	$(OBJ_SRC)
-	$(CC)	$(CPPFLAGS)	$(OBJ_SRC)	-o	$(EXEC)
+	$(CC) $(CPPFLAGS)	$(OBJ_SRC)	-o	$(EXEC)
 
 clean:
 	rm -f $(OBJ_SRC)

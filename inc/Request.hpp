@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:55:59 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/26 13:21:11 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/01/29 12:21:51 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Request
 
 		bool done_read;
 		bool done_write;
+		bool error;
 		Request& operator=(const Request& req);
 		Server returnServerOfRequest(std::vector<class Server> servers);
 		int returnLocationIndex(std::string file, Server srv);

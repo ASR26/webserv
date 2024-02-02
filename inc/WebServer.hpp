@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:13:01 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/26 13:44:58 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/01 11:40:49 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ class WebServer
 		int serverSocket_acc;
 		socklen_t acceptedaddrinfo_size;
 		std::map<int, class Request> requestQueue;
+		std::vector<int> serverSocketFD;
+		struct pollfd sockets[1000];
+		int socketCount;
+		int	eventCount;
+		int finishedEvents;
 	public:
 		WebServer();
 		WebServer(const WebServer &);
@@ -39,6 +44,10 @@ class WebServer
 		void addTestServer();
 		bool isServerSocket(int);
 		void checkServerSpecification();
+
+		void acceptConnection(int fd);
+		void readFromSocket(int fd, int i);
+		void writeToSocket(int fd, int i);
 };
 
 #endif
