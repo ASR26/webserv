@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/02/05 12:23:48 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/05 12:30:08 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,7 +211,6 @@ void Request::readRequest(std::vector<class Server> servers)
 	if (!header.empty() && (body.size() == this->body_size || body_raw.size() == this->body_size))
 	{
 		done_read = true;
-		std::cout << "REQUEST:" << std::endl << header << std::endl;
 		this->setMethod();
 	}
 	return ;
@@ -786,7 +785,6 @@ void Request::formResponse()
 			executeDeleteRequest();
 			break;
 	}
-	std::cout << "RESPONSE:" << std::endl << response << std::endl;
 	return ;
 }
 
