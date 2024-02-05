@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/15 08:30:43 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/16 11:39:06 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/03 08:14:30 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,7 @@ std::vector<std::string> split(std::string str, std::string c)
 	std::string word;
 	size_t len;
 	while (str[0] && str[0] == c[0])
-	{
 		str.erase(0, 1);
-	}
 	while (!str.empty())
 	{
 		if (str.substr(0, std::string::npos).find(c) == std::string::npos)
@@ -89,14 +87,5 @@ std::string fileToStr(std::string file)
 
 int	hexToDec(std::string num)
 {
-	//std::string ascii = "";
-	//unsigned long result = 0;
-   /*  for (size_t i = 0; i < num.length(); i += 2)
-    {
-		std::string part = num.substr(i, 2);
-        char ch = strtoul(part.c_str(), nullptr, 16);
-        ascii += ch;
-    } */
-	//result = atoi(ascii.c_);
     return strtoul(num.c_str(), nullptr, 16);
 }

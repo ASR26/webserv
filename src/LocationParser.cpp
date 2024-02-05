@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/01/26 13:33:00 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/03 10:04:38 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,13 +14,7 @@
 
 LocationParser::LocationParser()
 {
-	//remove all this later
-	location = "/dir1";
-	root = "/abc/123/xyz/bye";
-	redirec.second = "https://en.wikipedia.org/wiki";
-	methods.push_back("GET");
-	methods.push_back("POST");
-	methods.push_back("DELETE");
+	return ;
 }
 
 LocationParser::LocationParser(const LocationParser& loc)
@@ -35,6 +29,7 @@ LocationParser::LocationParser(const LocationParser& loc)
 	this->redirec = loc.redirec;
 	this->cgi_pass = loc.cgi_pass;
 	this->error = loc.error;
+	return ;
 }
 
 
@@ -101,9 +96,9 @@ LocationParser::LocationParser(std::string conf)
 		n = conf.find("\n", n + 1);
 		root = trimSpaces(conf.substr(i, n - i));
 		if (root[root.length() - 1] == '/')
-			throw std::runtime_error("Error: Wrong configuration file");
+			throw std::runtime_error("\033[1;31mError\033[0m: Wrong configuration file");
 		else if (root[0] != '/')
-			throw std::runtime_error("Error: Wrong configuration file");
+			throw std::runtime_error("\033[1;31mError\033[0m: Wrong configuration file");
 		conf.erase(i - 5, n - i + 5);
 	}
 
@@ -156,9 +151,9 @@ LocationParser::LocationParser(std::string conf)
 	{
 		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n) - (n + 7)));
 		if (upload[upload.length() - 1] == '/')
-			throw std::runtime_error("Error: Wrong configuration file");
+			throw std::runtime_error("\033[1;31mError\033[0m: Wrong configuration file");
 		else if (upload[0] != '/')
-			throw std::runtime_error("Error: Wrong configuration file");
+			throw std::runtime_error("\033[1;31mError\033[0m: Wrong configuration file");
 		conf.erase(n, conf.find("\n", n) - n);
 	}
 
@@ -211,8 +206,7 @@ LocationParser::LocationParser(std::string conf)
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t')
-			throw std::runtime_error("Error: Wrong configuration file");
-	//getInfo();
+			throw std::runtime_error("\033[1;31mError\033[0m: Wrong configuration file");
 }
 
 LocationParser::~LocationParser()

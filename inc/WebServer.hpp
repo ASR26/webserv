@@ -6,14 +6,14 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:13:01 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/02/01 11:40:49 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/03 08:11:29 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERVER_HPP
 # define WEBSERVER_HPP
 
-# include "ServerConfiguration.hpp"
+# include "Server.hpp"
 
 class WebServer
 {
@@ -24,8 +24,9 @@ class WebServer
 		socklen_t acceptedaddrinfo_size;
 		std::map<int, class Request> requestQueue;
 		std::vector<int> serverSocketFD;
-		struct pollfd sockets[1000];
-		int socketCount;
+		std::vector<struct pollfd> sockets;
+		std::map<int, time_t> timeoutPerSocket;
+		//struct pollfd sockets[1000];
 		int	eventCount;
 		int finishedEvents;
 	public:
@@ -48,6 +49,9 @@ class WebServer
 		void acceptConnection(int fd);
 		void readFromSocket(int fd, int i);
 		void writeToSocket(int fd, int i);
+		void addSocket(int fd);
+		void clearFinishedSockets();
+		bool existFinishedSocket();
 };
 
 #endif

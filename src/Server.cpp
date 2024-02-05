@@ -14,13 +14,7 @@
 
 Server::Server()
 {
-	//remove all this later
-	port.push_back("8080");
-	methods.push_back("GET");
-	methods.push_back("POST");
-	methods.push_back("DELETE");
-	auto_index = false;
-	location.push_back(LocationParser());
+	return ;
 }
 
 Server::Server(std::string conf)
@@ -28,8 +22,6 @@ Server::Server(std::string conf)
 	std::string::size_type	n;
 	int						i = 0;
 	int						j = 0;
-	//struct addrinfo default_addrinfo;
-	//struct addrinfo *returned_sockaddr;
 
 	conf.erase(0, 6);
 	n = conf.find("location");
@@ -50,7 +42,6 @@ Server::Server(std::string conf)
 			if (conf.find("*.", n) < (unsigned long)i && conf.find("cgi_pass", n) < (unsigned long)i)
 			{
 				std::string cgi_file_type = trimSpaces(conf.substr(conf.find("*.", n) + 2, conf.find("{", conf.find("*.", n) + 2) - (conf.find("*.", n) + 2)));
-				//std::cout << "CGI name:" << trimSpaces(conf.substr(conf.find("*.", n) + 2, conf.find("{", conf.find("*.", n) + 2) - (conf.find("*.", n) + 2))) << "<-" << std::endl;
 				cgi[cgi_file_type] = location.back().getCGI();
 			}
 			conf.erase(n, i - n);
@@ -99,35 +90,29 @@ Server::Server(std::string conf)
 	}
 
 	n = conf.find("error_page");
-	//if (n == std::string::npos)
-	//	error[404] = "default_location";//no hace falta
-	//else
-	//{
-		while (n != std::string::npos)
+	while (n != std::string::npos)
+	{
+		i = n;
+		while (conf[i] != '\n')
+			i++;
+		j = i;
+		while (conf[j] != ' ')
+			j--;
+		while (conf[n] != ' ')
+			n++;
+		while (std::atoi(&conf[n]))
 		{
-			i = n;
-			while (conf[i] != '\n')
-				i++;
-			j = i;
-			while (conf[j] != ' ')
-				j--;
-			while (conf[n] != ' ')
-				n++;
-			while (std::atoi(&conf[n]))
-			{
-				std::string s;
-				error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j + 1, i - j - 1));
-				s = error[std::atoi(&conf[n])];
-				if (s[0] != '/')
-					throw std::runtime_error("Error: Wrong configuration file");
-				//n += 1 + std::to_string(std::atoi(&conf[n])).length();//to_str es c++ 11!!!!!!!!!!!!!!!!!!!
-				s = intToStr(std::atoi(&conf[n]));
-				n += 1 + s.size();// esto NO es c++11, devuelve lo mismo que la línea comentada (debería estar bien)
-			}
-			conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
-			n = conf.find("error_page", n);
+			std::string s;
+			error[std::atoi(&conf[n])] = trimSpaces(conf.substr(j + 1, i - j - 1));
+			s = error[std::atoi(&conf[n])];
+			if (s[0] != '/')
+				throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file");
+			s = intToStr(std::atoi(&conf[n]));
+			n += 1 + s.size();
 		}
-	//}
+		conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
+		n = conf.find("error_page", n);
+	}
 
 	n = conf.find("client_max_body_size");
 	if (n == std::string::npos)
@@ -208,9 +193,9 @@ Server::Server(std::string conf)
 		n = conf.find("\n", n + 1);
 		root = trimSpaces(conf.substr(i, n - i));
 		if (root[root.length() - 1] == '/')
-			throw std::runtime_error("Error: Wrong configuration file");
+			throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file");
 		else if (root[0] != '/')
-			throw std::runtime_error("Error: Wrong configuration file");
+			throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file");
 		conf.erase(conf.find("root"), conf.find("\n", conf.find("root")) - conf.find("root"));
 	}
 
@@ -221,57 +206,14 @@ Server::Server(std::string conf)
 	{
 		upload = trimSpaces(conf.substr(n + 7, conf.find("\n", n + 1) - n - 7));
 		if (upload[0] != '/')
-			throw std::runtime_error("Error: Wrong configuration file");
+			throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file");
 		conf.erase(conf.find("upload"), conf.find("\n", conf.find("upload")) - conf.find("upload"));
 	}
 
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
-			throw std::runtime_error("Error: Wrong configuration file");;
-	
-	//getInfo();
-
-	/*memset(&default_addrinfo, 0, sizeof(struct addrinfo));
-	default_addrinfo.ai_family = AF_INET;
-	default_addrinfo.ai_socktype = SOCK_STREAM;
-	default_addrinfo.ai_flags = AI_PASSIVE;
-	if (getaddrinfo(NULL, "8080", &default_addrinfo, &returned_sockaddr) != 0)
-	{
-		//error
-	}
-	i = 0;
-	struct addrinfo *cpy = returned_sockaddr;
-	while (cpy)
-	{
-		cpy = cpy->ai_next;
-		i++;
-	}
-	std::cout << "returned_sockaddr has " << i << " node(s)" << std::endl;
-
-	struct sockaddr_in sockaddr_conf;
-
-	memset(&sockaddr_conf, 0, sizeof(struct sockaddr_in));
-	sockaddr_conf.sin_family = AF_INET;
-	sockaddr_conf.sin_port = htons(8080);
-	sockaddr_conf.sin_addr.s_addr = inet_addr("0.0.0.0"); 
-
-	if ((serverSocket = socket(PF_INET, SOCK_STREAM, 0)) < 0)
-	{
-		throw std::runtime_error("Error: socket");
-	}
-	//setsockopt
-	if (bind(serverSocket, returned_sockaddr->ai_addr, returned_sockaddr->ai_addrlen) == -1)
-	{
-		throw std::runtime_error(strerror(errno));
-	}
-	if (listen(serverSocket, 1000) == -1)
-	{
-		throw std::runtime_error("Error: listen");
-	}
-	//freeaddrinfo(returned_sockaddr);
-	//std::cout << "So far so good..." << std::endl;
-	return ;*/
+			throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file");
 }
 
 Server::Server(const Server& ser)
@@ -337,7 +279,7 @@ void	Server::getInfo()
 	std::map<int, std::string>::iterator m_it = error.begin();
 	while (m_it != error.end())
 	{
-		std::cout << "Error page : " << m_it->first << " " << m_it->second << std::endl;
+		std::cout << "\033[1;31mError\033[0m page : " << m_it->first << " " << m_it->second << std::endl;
 		++m_it;
 	}
 	std::vector<std::string>::iterator	meth_it = methods.begin();
@@ -370,6 +312,22 @@ int Server::getServerSocket() const
 	return this->serverSocket;
 }
 
+void Server::messageOpenServer()
+{
+	if (s_name.size() == 0)
+		std::cout << "\033[1;34m" << "WebServ listening on " << "\033[1;32m" << "localhost:" << port[0] << "\033[0m" << std::endl;
+	else
+	{
+		for (unsigned int i = 0; i < s_name.size(); i++)
+		{
+			if (!s_name[i].empty()) 
+				std::cout << "\033[1;34m" << "WebServ listening on " << "\033[1;32m" << s_name[i] << ".localhost:" << port[0] << "\033[0m" << std::endl;
+			else
+				std::cout << "\033[1;34m" << "WebServ listening on " << "\033[1;32m" << "localhost:" << port[0] << "\033[0m" << std::endl;
+		}
+	}
+}
+
 void Server::openServerSocket()
 {
 	struct addrinfo default_addrinfo;
@@ -379,59 +337,23 @@ void Server::openServerSocket()
 	default_addrinfo.ai_family = AF_INET;
 	default_addrinfo.ai_socktype = SOCK_STREAM;
 	default_addrinfo.ai_flags = AI_PASSIVE;
-	//this->port_str = "8080";//remove this later
 	if (getaddrinfo(NULL, port[0].c_str(), &default_addrinfo, &returned_sockaddr) != 0)
-	{
-		throw std::runtime_error("Error: getaddrinfo");
-	}
-	
-	/* sockaddr_in socketAddr;
-	socklen_t socketAddrSize = sizeof(socketAddr);
-
-	memset(&socketAddr, 0, socketAddrSize);
-	socketAddr.sin_family = AF_INET;
-	socketAddr.sin_port = htons(std::atoi(port[0].c_str()));
-	socketAddr.sin_addr.s_addr = inet_addr("127.0.0.1"); */
-
-
+		throw std::runtime_error("\033[1;31mError\033[0m: getaddrinfo: " + std::string(strerror(errno)));
 	if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-	{
-		throw std::runtime_error("Error: socket");
-	}
+		throw std::runtime_error("\033[1;31mError\033[0m: socket");
 	else
 	{
-		std::cout << "server socket: " << serverSocket << std::endl;
 		int option_val = 1;
 		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1 || setsockopt(serverSocket, SOL_SOCKET, SO_REUSEPORT, &option_val, sizeof(option_val)))
-		{
-			throw std::runtime_error("Error: socket option");
-		}
-		fcntl(serverSocket, F_SETFD , O_NONBLOCK, FD_CLOEXEC);
-		
+			throw std::runtime_error("\033[1;31mError\033[0m: setsockotp: " + std::string(strerror(errno)));
+		if (fcntl(serverSocket, F_SETFD , O_NONBLOCK, FD_CLOEXEC) < 0)
+			throw std::runtime_error("\033[1;31mError\033[0m: fcntl: " + std::string(strerror(errno)));
 	}
-	//setsockopt
-	
-	/* if (bind(serverSocket, (sockaddr *)&socketAddr, socketAddrSize) == -1)
-	{
-		throw std::runtime_error(strerror(errno));
-	}
-	if (listen(serverSocket, 10) == -1)
-	{
-		throw std::runtime_error("Error: listen");
-	} */
-	//freeaddrinfo(returned_sockaddr);
-
-
 	if (bind(serverSocket, returned_sockaddr->ai_addr, returned_sockaddr->ai_addrlen) == -1)
-	{
-		throw std::runtime_error(strerror(errno));
-	}
+		throw std::runtime_error("\033[1;31mError\033[0m: bind " + std::string(strerror(errno)));
 	if (listen(serverSocket, 1000) == -1)
-	{
-		throw std::runtime_error("Error: listen");
-	}
-	//freeaddrinfo(returned_sockaddr);
-	//std::cout << "So far so good..." << std::endl;
+		throw std::runtime_error("\033[1;31mError\033[0m: listen " + std::string(strerror(errno)));
+	freeaddrinfo(returned_sockaddr);
 	return ;
 }
 

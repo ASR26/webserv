@@ -59,12 +59,8 @@
 
 #include "Server.hpp"
 #include "LocationParser.hpp"
-
 #include "WebServer.hpp"
-#include "ServerConfiguration.hpp"
-#include "Error.hpp"
 #include "Request.hpp"
-#include "Response.hpp"
 
 
 size_t nbrEqualChar(std::string str1, std::string str2);

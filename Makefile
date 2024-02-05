@@ -6,13 +6,14 @@
 #    By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/16 14:13:39 by gromero-          #+#    #+#              #
-#    Updated: 2024/01/29 12:35:18 by ysmeding         ###   ########.fr        #
+#    Updated: 2024/02/03 08:10:11 by ysmeding         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRC			=	src/main.cpp src/WebServer.cpp src/LocationParser.cpp \
-				src/Server.cpp src/ServerConfiguration.cpp \
-				src/Error.cpp src/Request.cpp src/Response.cpp \
+SRC			=	src/main.cpp src/WebServer.cpp \
+				src/LocationParser.cpp \
+				src/Server.cpp \
+				src/Request.cpp \
 				src/miscellaneous.cpp
 
 OBJ_SRC		=	 $(SRC:.cpp=.o)

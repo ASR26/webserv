@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gromero- <gromero-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/01/22 12:03:10 by gromero-         ###   ########.fr       */
+/*   Updated: 2024/02/03 11:01:59 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 	(void)argv;
 	if (argc > 2)
 	{
-		std::cerr << "Error: Too many arguments." << std::endl;
+		std::cerr << "\033[1;31mError\033[0m: Too many arguments." << std::endl;
 		std::exit (EXIT_FAILURE);
 	}
 	try
@@ -37,6 +37,3 @@ int main(int argc, char **argv)
 	}
 	
 }
-
-//add listening socket to waiting list
-//in while loop check if socket is listening socket, if it is use accept and add new socket to waiting list
