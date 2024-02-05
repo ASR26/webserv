@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 12:19:26 by gromero-          #+#    #+#             */
-/*   Updated: 2024/02/03 10:04:38 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/05 16:37:23 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ LocationParser::LocationParser(std::string conf)
 
 	n = conf.find("client_max_body_size");
 	if (n == std::string::npos)
-		c_size = 1;
+		c_size = 1000000;
 	else
 	{
 		i = n;

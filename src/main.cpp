@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 11:23:25 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/02/03 11:01:59 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/05 16:57:12 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 		if (argc == 2)
 			mywebserver.addServer(argv[1]);
 		else
-			mywebserver.addServer("./conf/peps.conf");
+			mywebserver.addServer("./conf/example.conf");
 		mywebserver.checkServerSpecification();
 		mywebserver.configureServer();
 		mywebserver.runWebserv();

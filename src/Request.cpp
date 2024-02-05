@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/28 13:59:41 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/02/05 12:30:08 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/05 18:53:02 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,13 @@
 
 
 Request::Request(): fd(-1), body_size(0), request(""), header(""), body(""), method(""), \
-response(""), done_read(false), done_write(false), error(false)
+response(""), loc_index(-1), done_read(false), done_write(false), error(false)
 {
 	return ;
 }
 
 Request::Request(int fd_r): fd(fd_r), body_size(0), request(""), header(""), body(""), \
-method(""), response(""), done_read(false), done_write(false), error(false)
+method(""), response(""), loc_index(-1), done_read(false), done_write(false), error(false)
 {
 	this->fd = fd_r;
 }
@@ -147,7 +147,7 @@ void Request::processHeader(std::vector<class Server> servers, int r, char *buf,
 			int index_for_location = returnLocationIndex(file, srv);
 			if (index_for_location >= 0)
 			{
-				if (this->body_size > (unsigned int)srv.getLocations()[index_for_location].getCSize() * 1024)
+				if (this->body_size > (unsigned int)srv.getLocations()[index_for_location].getCSize())
 				{
 					done_read = true;
 					formErrorResponse(413);
@@ -156,7 +156,7 @@ void Request::processHeader(std::vector<class Server> servers, int r, char *buf,
 			}
 			else
 			{
-				if (this->body_size > (unsigned int)srv.getCSize() * 1024)
+				if (this->body_size > (unsigned int)srv.getCSize())
 				{
 					done_read = true;
 					formErrorResponse(413);
@@ -186,13 +186,11 @@ void Request::readRequest(std::vector<class Server> servers)
 	unsigned long pos;
 
 	r = read(this->fd, buf, 10000);
-	if (r < 0)
+	if (r <= 0)
 	{
 		error = true;
 		return ;
 	}
-	//if (r == 0)
-		//throw std::runtime_error("Error: reading request returned 0");
 	buf[r] = 0;
 	request += std::string(buf);
 	if (header.empty() && (pos = request.find("\r\n\r\n")) != std::string::npos)
@@ -325,12 +323,18 @@ void Request::formErrorResponse(int error_code)
 			if (error_file.empty())
 				error_file = "./example_resources/def/delete";
 			break;
+		case 600:
+			response = std::string("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: ");
+			if (error_file.empty())
+				error_file = "./example_resources/def/noindex";
+			break;
 		default:
 			std::cout << "This server does not support error " << error_code << std::endl;
 			break;
 	}
 	std::string resp = fileToStr(error_file.c_str());
 	response += intToStr(resp.size()) + "\r\n\r\n" + resp;
+	
 }
 
 void Request::executeGetRequest()
@@ -430,7 +434,7 @@ void Request::executeGetRequest()
 				switch (checkAccess(index_path_file, R_OK))
 				{
 					case -1:
-						formErrorResponse(404);
+						formErrorResponse(600);
 						return ;
 					case 1:
 						formErrorResponse(403);
@@ -476,12 +480,6 @@ void Request::createPostFile(std::string name)
 {
 	std::string ext = "";
 
-	if ((loc_index >= 0 && body.size() > (unsigned int)(server.getLocations()[loc_index].getCSize() * 1024)) || (body.size() > (unsigned int)(server.getCSize() * 1024)))
-	{
-		formErrorResponse(413);
-		return;
-	}
-
 	if (request_file_path.back() != '/')
 		request_file_path += "/";
 	if (name.empty())
@@ -510,11 +508,7 @@ void Request::createPostFile(std::string name)
 	{
 		complete_path = "." + server.getLocations()[loc_index].getRoot() + server.getLocations()[loc_index].getUpload();
 	}
-	else if (loc_index >= 0 && server.getLocations()[loc_index].getRoot().empty() && !server.getUpload().empty())
-	{
-		complete_path = "." + server.getRoot() + server.getUpload();
-	}
-	else if (!server.getUpload().empty())
+	else if (( loc_index < 0 || (loc_index >= 0 && server.getLocations()[loc_index].getRoot().empty())) && !server.getUpload().empty())
 	{
 		complete_path = "." + server.getRoot() + server.getUpload();
 	}
@@ -536,7 +530,7 @@ void Request::createPostFile(std::string name)
 	new_file.open(complete_path);
 	for (unsigned int i = 0; i < body_raw.size(); i++)
 		new_file << body_raw[i];
-	response = "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nLocation: " + complete_path + "\r\n\r\n";
+	response = "HTTP/1.1 201 Created\r\nContent-Length: 0\r\nLocation: " + complete_path + "\r\n\r\n";
 	return ;
 }
 
@@ -790,12 +784,11 @@ void Request::formResponse()
 
 void Request::sendResponse()
 {
-	int w;
-
+	int w; 
 	if (this->response.empty())
 		this->formResponse();
 	w = write(this->fd, this->response.c_str(), this->response.size());
-	if (w < 0)
+	if (w <= 0)
 	{
 		error = true;
 		return ;

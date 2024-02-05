@@ -6,7 +6,7 @@
 /*   By: ysmeding <ysmeding@student.42malaga.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/15 12:15:48 by ysmeding          #+#    #+#             */
-/*   Updated: 2024/02/05 08:20:31 by ysmeding         ###   ########.fr       */
+/*   Updated: 2024/02/05 14:10:08 by ysmeding         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,24 +77,32 @@ void WebServer::addServer(std::string conf)
 		}
 	else
 		throw std::runtime_error("\033[1;31mError\033[0m: Configuration file could not be opened.");
-	n = file.find("server");
-	while (n != std::string::npos)
+	try
 	{
-		int	i = n + 5;
-		while (file[++i] && file[i] != '{')
-			if (file[i] != ' ' && file[i] != '\t')
-				throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file.");
-		i = n;
-		while (file[i] && file[i] != '{')
-			i++;
-		int cont = 1;
-		while (file[++i] && cont != 0)
-			if (file[i] == '{')
-				cont++;
-			else if (file[i] == '}')
-				cont--;
-		servers.push_back(Server(file.substr(n, i - n)));
-		n = file.find("server", i);
+		n = file.find("server");
+		while (n != std::string::npos)
+		{
+			int	i = n + 5;
+			while (file[++i] && file[i] != '{')
+				if (file[i] != ' ' && file[i] != '\t')
+					throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file.");
+			i = n;
+			while (file[i] && file[i] != '{')
+				i++;
+			int cont = 1;
+			while (file[++i] && cont != 0)
+				if (file[i] == '{')
+					cont++;
+				else if (file[i] == '}')
+					cont--;
+			servers.push_back(Server(file.substr(n, i - n)));
+			n = file.find("server", i);
+		}
+	}
+	catch(const std::exception& e)
+	{
+		fd.close();
+		throw std::runtime_error(std::string(e.what()));
 	}
 	fd.close();
 }
@@ -274,7 +282,9 @@ void WebServer::assignServerToRequest(class Request &req)
 			}
 		}
 		if (found == 0)
+		{
 			req.formErrorResponse(400);
+		}
 	}
 }
 
@@ -394,12 +404,6 @@ void WebServer::runWebserv()
 			i = 0;
 			while (i < sockets.size())
 			{
-				/* if (!isServerSocket(sockets[i].fd) && time(NULL) > timeoutPerSocket[sockets[i].fd] + 30)
-				{
-					std::cout << "TIMEOUT!! " << timeoutPerSocket[sockets[i].fd] << " " << time(NULL) << std::endl;
-					requestQueue.find(sockets[i].fd)->second.setResponse("HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/html\r\nContent-Length: 0");
-					sockets[i].events = POLLOUT;
-				} */
 				if (sockets[i].fd >= 0 && isServerSocket(sockets[i].fd) && sockets[i].revents == POLLIN)
 					acceptConnection(sockets[i].fd);
 				if (sockets[i].fd >= 0 && !isServerSocket(sockets[i].fd) && sockets[i].revents == POLLIN)

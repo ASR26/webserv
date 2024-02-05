@@ -111,12 +111,12 @@ Server::Server(std::string conf)
 			n += 1 + s.size();
 		}
 		conf.erase(conf.find("error_page"), conf.find("\n", conf.find("error_page")) - conf.find("error_page"));
-		n = conf.find("error_page", n);
+		n = conf.find("error_page", 0);
 	}
 
 	n = conf.find("client_max_body_size");
 	if (n == std::string::npos)
-		c_size = 1;
+		c_size = 1000000;
 	else
 	{
 		while (conf[n] != ' ')
@@ -213,7 +213,10 @@ Server::Server(std::string conf)
 	i = -1;
 	while (conf[++i])
 		if (conf[i] != ' ' && conf[i] != '\n' && conf[i] != '}' && conf[i] != '\t' && conf[i] != '{')
-			throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file");
+		{
+			std::cout << conf << std::endl;
+			throw std::runtime_error("\033[1;31mError\033[0m: Invalid configuration file...");
+		}
 }
 
 Server::Server(const Server& ser)
@@ -344,7 +347,7 @@ void Server::openServerSocket()
 	else
 	{
 		int option_val = 1;
-		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1 || setsockopt(serverSocket, SOL_SOCKET, SO_REUSEPORT, &option_val, sizeof(option_val)))
+		if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option_val, sizeof(option_val)) == -1)
 			throw std::runtime_error("\033[1;31mError\033[0m: setsockotp: " + std::string(strerror(errno)));
 		if (fcntl(serverSocket, F_SETFD , O_NONBLOCK, FD_CLOEXEC) < 0)
 			throw std::runtime_error("\033[1;31mError\033[0m: fcntl: " + std::string(strerror(errno)));
