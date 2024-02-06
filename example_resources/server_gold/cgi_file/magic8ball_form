@@ -1,0 +1,18 @@
+
+
+<head></head> 
+<body> 
+<b>Fill in the information to get the answer to any question you may have:</b><br> 
+<form action="/magic8ball.php" method="post"> 
+First Name:<br> 
+<input type="text" name="first_name" size="20" maxlength="100"><br> 
+Last Name:<br> 
+<input type="text" name="last_name" size="20" maxlength="100"><br> 
+<br> 
+Closed Question:<br> 
+<textarea wrap= "virtual" name="question" cols="25" rows="1"></textarea><br> 
+<br> 
+<input type="submit" value="Submit"> 
+</form> 
+</body> 
+</html> 

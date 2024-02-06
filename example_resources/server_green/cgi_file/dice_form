@@ -1,0 +1,13 @@
+<head></head> 
+<body> 
+<b>Fill in the information:</b><br> 
+<form action="/dice.py" method="post"> 
+Number of dice:<br> 
+<input type="text" name="first_name" size="20" maxlength="100"><br> 
+Number of faces per dice:<br> 
+<input type="text" name="last_name" size="20" maxlength="100"><br> 
+<br> 
+<input type="submit" value="Submit"> 
+</form> 
+</body> 
+</html>

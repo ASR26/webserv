@@ -1,0 +1,20 @@
+curl -v -X POST localhost:2000/abc/123/xyz/bye/ -H "Content-Type: html/text" --data-binary @Documents/testfile.txt
+
+
+
+
+curl -v --resolve blue:2000:127.0.0.1 http://blue:2000/
+
+curl -v --resolve gold:2000:127.0.0.1 http://gold:2000/
+
+curl -v -X POST -H "Content-Type: plain/text" localhost:2002/dirs/text --data "BODY"
+
+curl -v -X DELETE localhost:2002/upload_dir/text
+
+curl -v -X POST localhost:2002 -H "Content-Type: html/text" --data-binary @/Users/ysmeding/Desktop/42Cursus/Rank5/webserv/repo_webserv/example_resources/cub3d.pdf
+
+curl -v -X GET localhost:2002/upload_dir/default_name --output cub.pdf
+
+curl -v -X GET 'localhost:2002/cgi_file/dice.py?arg=3'
+
+curl -v -X POST localhost:2002/cgi_file/dice.py --data-binary "a=2&b=20"
